@@ -8,6 +8,10 @@ My R works in Ocean Data Bank (ODB), Institute of Oceanography, NTU, Taiwan
 
 2. Shiny R integrated query web-application for bio-database of ODB
 
-<a href="https://app09.odb.ntu.edu.tw/odb/odenv/">Query application for Bio-database of ODB</a> 
+<a href="http://bio.odb.ntu.edu.tw/query/">Query application for Bio-database of ODB</a>. Update: Jan, 2018
+
+Manual for usage:
+Chinese version: https://goo.gl/UJXX2i  
+English version: https://goo.gl/E5LS4C
 
 
