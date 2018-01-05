@@ -148,8 +148,8 @@ $(document).ready(function () {
 <div class="column-main">
 <ul>
 <li>科技部海洋學門資料庫 (ODB) 生物資料查詢介面使用說明</li>
-<li>It’s a mannual for web page <a href="http://bio.odb.ntu.edu.tw/query/" , target="_blank">bio.odb.ntu.edu.tw/query</a> to query bio-database in Ocean Data Bank (ODB), Institute of Oceanography (NTU) and the Ministry of Science and Technology (MOST), Taiwan.<br></li>
-<li>See the <a href>mannual in English</a>.</li>
+<li>It’s a manual for web page <a href="http://bio.odb.ntu.edu.tw/query/" , target="_blank">bio.odb.ntu.edu.tw/query</a> to query bio-database in Ocean Data Bank (<strong>ODB</strong>), Institute of Oceanography, National Taiwan University (<strong>IONTU</strong>) and the Ministry of Science and Technology (<strong>MOST</strong>), Taiwan.<br>&gt;</li>
+<li>See the <a href="https://goo.gl/vhJJpD">manual in English</a>.</li>
 </ul>
 <h4><a name="Data_apply_contact">參考網站</a></h4>
 <ul>
@@ -170,13 +170,13 @@ $(document).ready(function () {
 <ol style="list-style-type: decimal">
 <li>海洋生物<strong>地理分布資訊</strong>查詢
 <ul>
-<li>以浮游動物（<strong>橈足類</strong>等）與<strong>仔稚魚</strong> (larval fish) 等海洋生物物種為主，可依學名查詢其地理分布。</li>
-<li>資料來源主要為 ODB 生物資料庫，自論文期刊、研究者資料分享、科技部研究計畫成果中擷取在台灣周遭海域 (10-40ﾟN, 105-135ﾟE) 海洋生物拖網資料，並經授權匯入此區域內 <a href="https://www.st.nmfs.noaa.gov/copepod/" , target="_blank">COPEPOD (Coastal and Oceanic Plankton Ecology, Production and Observation Database)</a> 海洋浮游生物資料庫部分資料。</li>
+<li>以浮游動物（<strong>橈足類</strong>等）與<strong>仔稚魚</strong> (larval fish) 等海洋生物物種為主，可依學名查詢其地理分布(主要在亞洲西太平洋區域）。</li>
+<li>資料來源主要為 ODB 生物資料庫，自科技部研究計畫成果、論文期刊、研究者資料分享中擷取在台灣周遭海域 (10-40ﾟN, 105-135ﾟE) 海洋生物拖網資料，並經授權匯入此區域內 <a href="https://www.st.nmfs.noaa.gov/copepod/" , target="_blank">COPEPOD (Coastal and Oceanic Plankton Ecology, Production and Observation Database)</a> 海洋浮游生物資料庫部分資料。</li>
 <li>查詢物種地理分布將自動引入 OBIS (Ocean Biogeographic Information Syste, <a href="http://iobis.org" , target="_blank">iobis.org</a>) API 可擷取之開放資料，請參考<a href="http://iobis.org/manual/" , target="_blank"> OBIS 官網對資料規範與 API 說明</a>。</li>
 </ul></li>
 <li>區域性海洋生物<strong>物種多樣性資訊</strong>呈現
 <ul>
-<li>涵蓋上述 ODB 生物資料庫中具有豐度（Abundance，以每立方公尺個體數為計）之量化數據，可查詢各採樣站或經緯度網格之物種組成。</li>
+<li>涵蓋上述 ODB 生物資料庫中具有豐度 (Abundance) 之量化數據，可查詢各採樣站或經緯度網格之物種組成。</li>
 </ul></li>
 <li>依查詢條件<strong>提供資料申請</strong>便捷服務
 <ul>
@@ -190,12 +190,12 @@ $(document).ready(function () {
 <ol style="list-style-type: decimal">
 <li>查詢海洋生物地理分布資訊
 <ul>
-<li><strong>學名輸入</strong>：在首頁空白查詢欄位中鍵入所需查詢之學名，將自動跳出最接近之候選物種供選擇。亦可經由 <span style="color:blue"> Tree list【物種分類群】</span>依所需物種所處之分類群（點開樹狀圖上三角形頁籤）選擇，按住<Ctrl>鍵後可用滑鼠複選，選好按下 Apply【完成】關閉樹狀選單。輸入之學名確認後，即可按 Query【查詢】。</li>
+<li><strong>學名輸入</strong>：在首頁空白查詢欄位中鍵入所需查詢之學名，將自動跳出最接近之候選物種供選擇。亦可經由 <span style="color:blue"> Tree list【物種分類群】</span>依所需物種所處之分類群（點開樹狀圖上三角形頁籤）選擇，按住 ‘Ctrl’ 鍵後可用滑鼠複選，選好按下 Apply【完成】關閉樹狀選單。輸入之學名確認後，即可按 Query【查詢】。</li>
 <li><strong>查詢結果</strong>：每一點位均可再點選顯示其<strong>資料引證</strong>與其他資訊。查詢後將同時顯示結果列表，列表中錨點符號可點選快速跳至地圖上該點位；列表亦可依條件進一步篩選結果。</li>
 </ul></li>
 </ol>
 </div>
-<pre><code>* 注意：目前本功能僅供一次查詢最多3個物種，以不同顏色呈現其分布。輸入之學名須為&quot;科&quot;級以下（科、屬、種），學名比對為精確比對，亦即查詢科名、屬名並不會包含該科或該屬以下所有物種，僅會查詢採樣資料中鑑定至科或屬(_spp._)之物種。</code></pre>
+<pre><code>* 注意：目前本功能僅供一次查詢最多3個物種，以不同顏色呈現其分布。輸入之學名須為&quot;科&quot;級以下（科、屬、種），學名比對為精確比對，亦即查詢科名、屬名並不會包含該科或該屬以下所有物種，僅會查詢採樣資料中鑑定至科或屬(spp.) 之物種。</code></pre>
 <pre class="r"><code>    # 備註：任一物種地理分布查詢結果，並不代表該物種之所有分布範圍，僅反映 ODB 與所引入外部資料所擁有該物種的資料範圍。</code></pre>
 <div class="column-one">
 <ol start="2" style="list-style-type: decimal">
@@ -231,7 +231,7 @@ $(document).ready(function () {
 </ol>
 </div>
 <p><br><br></p>
-<pre><code>* 本網站以R Shiny與相關開源技術製作，若您對技術細節、相關資料想進一步了解，或欲回饋使用意見，請來信 cyweng24@ntu.edu.tw</code></pre>
+<pre><code>* 本網站以R Shiny與相關開源技術製作，若您對相關資料、技術細節想進一步了解，或欲回饋使用意見，請來信 cyweng24@ntu.edu.tw</code></pre>
 
 
 
