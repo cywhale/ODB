@@ -10,7 +10,7 @@ My R works in Ocean Data Bank (ODB), Institute of Oceanography, NTU, Taiwan
 
     - <a href="http://bio.odb.ntu.edu.tw/query/">Query application for Bio-database of ODB</a>. Update: Jan, 2018
     
-    - Remarks: <a href="http://bio.odb.ntu.edu.tw/index_tech_citations.html">Technical citations</a>
+    - Remarks: <a href="http://bio.odb.ntu.edu.tw/index_tech_citations.html">Technical citations</a> and [notes](Techniques_ref01.md)
 
 3. Manual for usage:
     - <a href="http://bio.odb.ntu.edu.tw/index.html">Chinese version</a>
