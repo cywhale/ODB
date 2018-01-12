@@ -11,6 +11,8 @@ Reference link: https://www.opencpu.org/posts/scoring-engine/
 * Another advantage is that, this handling can be scheduled into *future*::future() if some pre-fetched data is needed. Then,
 the shiny-server can continue to accomplish other UI's loading. As you need to render these pre-fetched data, just use future::value().
 Other external data can be also scheduled into future().
+    - Happy to see the Promise in shiny will integrated with future. Here is the discussion https://github.com/HenrikBengtsson/future/pull/163#issuecomment-357098873 
+
 
 *Loding*...
 * Encounter that js|css cannot be cached in Nginx, otherwise the web site got Errors. So I serve them in CDN.
