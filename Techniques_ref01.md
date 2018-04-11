@@ -12,7 +12,21 @@ Reference link: https://www.opencpu.org/posts/scoring-engine/
 the shiny-server can continue to accomplish other UI's loading. As you need to render these pre-fetched data, just use future::value().
 Other external data can be also scheduled into future().
     - Happy to see the Promise in shiny will integrated with future. Here is the discussion https://github.com/HenrikBengtsson/future/pull/163#issuecomment-357098873 
-
+*  **201804 update**    
+*  All long-run R functions work well in fx <- reactive({ future( foo() ) }), move away other shiny reactive controls within future(), use observeEvent(event, { fx() %...>% ({do something}) }) #Rshiny async #promises + #future both plan(multiprocess), plan(callr) ok #rstats https://twitter.com/bramasolo/status/983942002440941568 
+*  An simplified example (app.R): https://github.com/cywhale/ODB/blob/master/shiny_async_test/app.R 
+*  promise_all idea: https://rstudio.github.io/promises/articles/combining.html
+```
+  f1 <- reactive({ future( fetchDB1() ) })
+  f2 <- reactive({ future( fetchDB2() ) })
+  observeEvent(event, { 
+    df1 <- f1() %...>% ({filtering...}) })
+    df2 <- f2() %...>% ({filtering...}) })
+    promise_all(df1, df2) %...>% {
+      rbindlist(l=., fill=TRUE, use.names=TRUE)
+      do some controls or side effects here...
+    }
+```
 
 *Loding*...
 * Encounter that js|css cannot be cached in Nginx, otherwise the web site got Errors. So I serve them in CDN.
