@@ -211,7 +211,7 @@ server <- function(input, output, session) {
   cancel.onSessionEnded <- session$onSessionEnded(function() {
 
     print("App End.. Goodbye!")
-    stopApp() 
+    #stopApp() 
   })
   
 }
