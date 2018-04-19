@@ -35,6 +35,11 @@ Reference link: https://goo.gl/fum9Ji
 
 Free free to contact me if any comments.
 
+
+Some references:
+*  A similar idea by using Plumber, presentation from Jeff Allen. Comments: https://twitter.com/bramasolo/status/987006787919360001
+
+
 Chinese version, also on ptt https://goo.gl/s9BZT8
 * 分享自己寫的 **shiny** app 主題是海洋浮游動物的生態資料庫查詢。在這就不介紹生態上的議題，主要分享技術上心得可供參考
 http://bio.odb.ntu.edu.tw/query/
