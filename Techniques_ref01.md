@@ -1,5 +1,7 @@
 Some technical issues about **R** **Shiny** application: http://bio.odb.ntu.edu.tw/query
 
+[![A small demo](https://github.com/cywhale/ODB/blob/master/Intro_web001_201806_remark01ezgif.gif)](https://github.com/cywhale/ODB/blob/master/Intro_web001_201806_remark01ezgif.gif)
+
 *Link to database*...
 * Construct shiny-server and PostgresSQL on different server. Write a private, internal package to connect database and return data. 
 Through *Opencpu* API, then we can can fetch data after users input some criteria in shiny UI, and terminate the link to database after receiving the queried data.
