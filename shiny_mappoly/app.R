@@ -1,5 +1,6 @@
 # Problem for leaflet, and use sf feature, drawn polygons, to get data 
 # modified codes from https://github.com/r-spatial/mapedit/issues/69
+# Updates: 20180819: Handles for removing-polygon operation #mapedit
 
 #### Testing parameters
 #options(shiny.trace=TRUE) ## for debug
@@ -37,41 +38,30 @@ ui <- fluidPage(
 )
 
 server <- function(input, output, session) {
-
+  
   #tempRD <- paste0(tempfile(), ".rds") ## only for debugging
   #print(tempRD)  
-
+  ## Using reactiveValues to store intersected data got from polygons ##
+  qryx <- reactiveValues(data=data.table(), msg=c(), msgflag=FALSE, ## message only for debug
+                         rmflag=0L) # when doing remove poly op, trigger re-plot leaflet
+  
   ns <- shiny::NS("eview") 
   
   initSet <- FALSE
-
+  
   #### Initialize Dataset
   datax <- reactive ({
     dt <- st_as_sf(breweries91) 
     coords <- st_coordinates(dt)
     setDT(dt) %>%
-        .[,`:=`(longitude = coords[,1], latitude = coords[,2], id=.I)]
+      .[,`:=`(longitude = coords[,1], latitude = coords[,2], id=.I)]
   })
-
+  
   #### Subset dataset from polygons drawn, set a flag "inpoly", indicating polygon id  
-  datapolyx <- reactive ({
-    if (!initSet | is.null(input$subset_but) | input$subset_but==0) {
-      return(datax() %>% .[,`:=`(inpoly = NA_character_)])
-    }
-    
-    nfr <- get_sfpolyx() ####### Get Polygon sets from map drawn 
-    
-    if (nrow(nfr)==0) {
-      return(datax() %>% .[,`:=`(inpoly = NA_character_)])
-    }
-    
-    sj <- as.data.frame(st_join(st_as_sf(breweries91), nfr, join = st_intersects)) 
-
-  ## Need handle intersection of multiple polygons  
-    datax() %>% merge(setDT(sj) %>% .[,.(brewery, id)] %>% setnames(2,"polyID"), by="brewery", all=TRUE) %>%
-      .[,{.(inpoly=ifelse(all(is.na(polyID)), NA_character_, paste(na.omit(polyID), collapse=",")))}, by=.(brewery, id, longitude, latitude)]
-  }) 
-
+  # datapolyx <- reactive ({
+  ## Move this functions into observe(), and store data in qryx$data
+  ##}) 
+  
   #### Initialize leaflet map  
   lf0 <- reactive({
     datax() %>%
@@ -85,11 +75,11 @@ server <- function(input, output, session) {
   output$subset_ui <- renderUI({
     actionButton("subset_but", "Subset")
   })
-
-  observeEvent(input$subset_but, { ## Renew subsetting data and redraw leaflet map
-
+  
+  observeEvent({input$subset_but; qryx$rmflag}, { ## Renew subsetting data and redraw leaflet map
+    req(!(is.null(input$subset_but) | !initSet)) 
     lf <- leafletProxy(ns("map")) %>% clearMarkers() %>% clearPopups()
-    dt <- datapolyx()
+    dt <- qryx$data #datapolyx()
     pal<- colorFactor('Set1', unique(dt$inpoly), na.color="grey")
     
     dt %>%
@@ -107,40 +97,38 @@ server <- function(input, output, session) {
   observe({ 
     if (!initSet) {
       initSet <<- TRUE
+      qryx$data<- datax() %>% .[,`:=`(inpoly = NA_character_)]
     }
     callModule(editMod, "eview", isolate({lf0()}))
   })
-
+  
   #### Render Output Table  
   output$dt_result_ui <- renderUI({
     DT::dataTableOutput("result_tbl")
   })
   
   output$result_tbl <- DT::renderDataTable({
-    dt <- datapolyx() 
+    dt <- qryx$data #datapolyx() 
     pal<- colorFactor('Set1', unique(dt$inpoly), na.color="grey")
-
+    
     dt %>% .[,.(id,longitude,latitude,inpoly)] %>%
-        DT::datatable(colnames=c("ID","lng","lat","polyIDs"),
-                      options = list(pageLength = 5, serverSide=TRUE, processing = TRUE, retrieve=TRUE),
-                      escape=FALSE)
+      DT::datatable(colnames=c("ID","lng","lat","polyIDs"),
+                    options = list(pageLength = 5, serverSide=TRUE, processing = TRUE, retrieve=TRUE),
+                    escape=FALSE)
   })
   
   #### Detect event from leaflet under editMod: Marker click  
-  em_idx <- eventReactive(input[[ns("map_marker_click")]], {  
+  em_idx <- reactive({
+    req(input[[ns("map_marker_click")]])
     cevent <- input[[ns("map_marker_click")]] 
+    qryx$msgflag <- FALSE
     
-    if (is.null(cevent)) {
-      return("click_by_emod_NONE")
-    }
     paste0("click_by_emod: ",as.character(cevent$id))
   })
   
   #### Map bounds  
-  em_boundx <- eventReactive(input[[ns("map_bounds")]], { 
-    if (is.null(input[[ns("map_bounds")]])) {
-      return("bounds_by_emod_NONE")
-    }
+  em_boundx <- reactive({
+    req(input[[ns("map_bounds")]])
     paste0("bounds_by_emod: ",paste(round(unlist(input[[ns("map_bounds")]]),2), collapse = "<br/>"))
   }) 
   
@@ -150,32 +138,53 @@ server <- function(input, output, session) {
   #  EVT_EDIT <- "map_draw_edited_features"
   #  EVT_DELETE <- "map_draw_deleted_features"
   # https://github.com/bhaskarvk/leaflet.extras/issues/96
-  # 
-  get_sfpolyx <- eventReactive(input[[ns("map_draw_all_features")]], {
+  #
+  observeEvent(input[[ns("map_draw_deleted_features")]], {
     req(!(is.null(input$subset_but) | !initSet)) 
-    
-    nf <- input[[ns("map_draw_all_features")]]
-    #only for debug
-    #print(str(nf$features))
-    
-    nfr <- do.call(rbind,sapply(seq_along(nf$features), function(x) {
-      st_sf(id=nf$features[x][[1]]$properties$`_leaflet_id`,
-            type=nf$features[x][[1]]$geometry$type,
-            geom=sf::st_geometry(mapedit:::st_as_sfc.geo_list(nf$features[x][[1]])),
-            crs=st_crs(4326))
-    }, simplify=FALSE))
-    
-    #only for debug
-    #saveRDS(nfr, file=tempRD)
-      
-    return(nfr)
+    qryx$rmflag <- qryx$rmflag + 1L
   })
   
+  # get_sfpolyx <- eventReactive(
+  observe({ #Event(input[[ns("map_draw_all_features")]], {
+    req(!(is.null(input$subset_but) | !initSet)) 
+    req(input[[ns("map_draw_all_features")]]) 
+    
+    nf <- input[[ns("map_draw_all_features")]]
 
+    #only for debug
+    # print(str(nf$features))
+
+    qryx$msgflag <- TRUE
+    
+    if (is.null(nf) | is.null(nf$features) | length(nf$features)==0) {
+      qryx$msg <- "No polygon drawn. Check it!"
+      qryx$data<- datax() %>% .[,`:=`(inpoly = NA_character_)]
+    } else {
+      nfr <- do.call(rbind,sapply(seq_along(nf$features), function(x) {
+        st_sf(id=nf$features[x][[1]]$properties$`_leaflet_id`,
+              type=nf$features[x][[1]]$geometry$type,
+              geom=sf::st_geometry(mapedit:::st_as_sfc.geo_list(nf$features[x][[1]])),
+              crs=st_crs(4326))
+      }, simplify=FALSE))
+      
+      #only for debug
+      #saveRDS(nfr, file=tempRD)
+      #return(nfr)
+      
+      sj <- as.data.frame(st_join(st_as_sf(breweries91), nfr, join = st_intersects)) 
+      qryx$msg <- paste0("Fetch data within polygons (",length(nf$features),")") ## Output message
+      ## Need handle intersection of multiple polygons  
+      qryx$data<- datax() %>% merge(setDT(sj) %>% .[,.(brewery, id)] %>% setnames(2,"polyID"), by="brewery", all=TRUE) %>%
+        .[,{.(inpoly=ifelse(all(is.na(polyID)), NA_character_, paste(na.omit(polyID), collapse=",")))}, by=.(brewery, id, longitude, latitude)]
+    } 
+  })
+  
+  
   #### Debugging Text Output
   output$outText <- renderUI({
-    
-    HTML(paste("From emMod: ", em_idx(), em_boundx(), sep="<br/>"))
+    msg <- ifelse(qryx$msgflag, paste(qryx$msg,sep="<br/>"),
+                    paste("From emMod: ", em_idx(), em_boundx(),sep="<br/>"))
+    HTML(msg)
   })
   
   cancel.onSessionEnded <- session$onSessionEnded(function() {
@@ -185,9 +194,3 @@ server <- function(input, output, session) {
 }
 
 shinyApp(ui = ui, server = server)
-
-
-
-
-
-
