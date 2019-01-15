@@ -22,3 +22,7 @@ BioQuery: a Shiny App <a href="https://bio.odb.ntu.edu.tw/query" target="_blank"
 
 _Update: 2018.06.05_
 ![twitter notes](https://pbs.twimg.com/media/De6PWyLUYAA5rdQ.jpg)
+
+_Update: 2019.01.15_
+[![Step by step (in Chinese)](https://github.com/cywhale/ODB/blob/master/docs/web_poly_regionalBio02_chinese.png)](https://github.com/cywhale/ODB/blob/master/docs/web_poly_regionalBio02_chinese.png)
+
