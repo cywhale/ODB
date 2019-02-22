@@ -1,5 +1,5 @@
 # Test plotly on absolutePanel in mapview/mapedit
-
+# for https://github.com/r-spatial/mapview/issues/192#issuecomment-437419996
 library(shiny)
 library(sf)
 library(leaflet)
@@ -74,7 +74,7 @@ server <- function(input, output) {
   
   observeEvent({input[[ns("map_shape_click")]]}, { 
     req(input[[ns("map_shape_click")]])
-    pievent <- input[[ns("map_shape_click")]]
+    
     if (!userAction$pclick) userAction$pclick <- TRUE
   })  
   
