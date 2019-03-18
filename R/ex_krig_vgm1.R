@@ -1,4 +1,4 @@
-## Kriging also used in open API of ODB, the following is a simplified code version to solve
+## Kriging is also used in open API of ODB, and the following is a simplified code version to solve
 ## https://gis.stackexchange.com/questions/315750/making-data-table-using-linear-kriging-interpolation-with-variogram-in-r
 
 longitude_for_data = c(32,68,89,145,176, -14, -42)
