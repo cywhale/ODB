@@ -52,7 +52,8 @@ server <- function(input, output, session) {
   ns <- shiny::NS("eview") 
   
   initSet <- FALSE
-  plan(multiprocess, gc=TRUE)
+  plan(multiprocess) #, gc=TRUE) ## gc=TRUE cause an Error/Warning problem like an old issue: 
+  ################################# https://github.com/HenrikBengtsson/future/issues/48
   #plan(callr)
   
   stat <- reactiveValues(toggleSubset=FALSE)
