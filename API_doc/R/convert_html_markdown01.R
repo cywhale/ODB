@@ -57,6 +57,7 @@ if (length(px)>0) {
       if (skip_flag) {
         print(paste0("Find content in row: ",i))
         skip_flag <- FALSE
+        newlinex()
         next
       }
       if (grepl(drop1_comment, px[i])) { 
@@ -109,6 +110,7 @@ if (length(px)>0) {
           curl_flag <- FALSE
         }
         
+        newlinex()
         my_writef(paste0("# Open ",toupper(section_anchor),".", cntx, 
                          " {.tabset .tabset-fade .tabset-pills}   "), fo)
         hlinex()
@@ -128,6 +130,7 @@ if (length(px)>0) {
                               ifelse(ex_count<10, paste0("0", ex_count), paste0(ex_count)),
                               '">', ex_pre, ': </a>'), px[i]),
                   fo)
+        #ex_count <- ex_count + 1L
         curl_flag <- TRUE
         next
       }
@@ -145,11 +148,11 @@ if (length(px)>0) {
     my_writef("## Response   ", fo)
     newlinex()
     my_writef(paste0('![', fig_cap[ex_count], '](', 
-                     paste0(fig_dir, fig_pre, cntx, fig_suffx, '.', fig_type, ')'),
-                     ' {style=text-align:center}'), fo)
+                     paste0(fig_dir, fig_pre, cntx, fig_suffx, '.', fig_type, ')')), fo)
     hlinex()
     ex_count <- ex_count + 1L
     cntx <- ifelse(ex_count<10, paste0("0", ex_count), paste0(ex_count))
     curl_flag <- FALSE
   }
 }
+

@@ -116,10 +116,9 @@ Bioquery, ODB
 
 <span class="docs-desc-comments__label">Comments</span>(0)
 
-Open API to get statitical results from bio-database, ODB, Institute of
-Oceanography, NTU. The API is in development stage and documentation is
-under construction. Updates will be continued. Now the bioquery API have
-following functions
+Open API to get statitical results from bio-database, ODB, Institute of Oceanography, NTU. 
+The API is in development stage and documentation is under construction. Updates will be continued. 
+Now the bioquery API have following functions:
 
 -   bioquery
 -   geo2map
