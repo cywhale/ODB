@@ -85,7 +85,7 @@ class="docs-example__response-title" title="bioquery site2map">bioquery site2map
    
 ## Response   
    
-![Bioquery site2map with polygonal region](img/ex01_resp.png) {style=text-align:center}
+![Bioquery site2map with polygonal region](img/ex01_resp.png)
    
    
 ---   
@@ -228,7 +228,7 @@ title="bioquery upload user data">bioquery upload user data</span>
    
 ## Response   
    
-![User data combined with ODB data with regions respectively](img/ex02_resp.png) {style=text-align:center}
+![User data combined with ODB data with regions respectively](img/ex02_resp.png)
    
    
 ---   

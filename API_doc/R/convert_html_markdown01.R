@@ -95,13 +95,10 @@ if (length(px)>0) {
         if (curl_flag) {
           ## Add Response Figure
           hlinex()
-
           my_writef("## Response   ", fo)
           newlinex()
-        
           my_writef(paste0('![', fig_cap[ex_count], '](', 
-                           paste0(fig_dir, fig_pre, cntx, fig_suffx, '.png)'),
-                           ' {style=text-align:center}'), fo)
+                           paste0(fig_dir, fig_pre, cntx, fig_suffx, '.png)')), fo)
           newlinex()
           hlinex()
           
