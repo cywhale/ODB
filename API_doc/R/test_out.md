@@ -1,0 +1,376 @@
+   
+Open API to get statitical results from bio-database, ODB, Institute of   
+Oceanography, NTU. The API is in development stage and documentation is   
+under construction. Updates will be continued. Now the bioquery API have   
+following functions   
+   
+-   bioquery   
+-   geo2map   
+-   geo2wwwmap   
+-   txt2geojson   
+-   site\_intersect   
+   
+# Open API.01 {.tabset .tabset-fade .tabset-pills}   
+   
+---   
+   
+## POST
+   
+---   
+   
+<a name="api01">keyword: </a> _bioquery site2map_
+   
+   
+**API cURL url: **https://bio.odb.ntu.edu.tw/api/bioquery/png {jpeg, pdf, svg}
+   
+site2map can plot sites, polygons, and overaly of environmental layer.   
+Basically it calls geo2map API, and can be incorporated with query   
+criteria from BioQuery web applications in bio.odb.ntu.edu.tw/query   
+   
+   
+---   
+   
+## Body   
+   
+---   
+   
+   
+<span class="docs-request-body__mode push-half--left">formdata</span>   
+<table>   
+<colgroup>   
+<col width="50%" />   
+<col width="50%" />   
+</colgroup>   
+<tbody>   
+<tr class="odd">   
+<td>config</td>   
+<td><div class="pm-markdown docs-request-table__desc">   
+<p>Query crieteria downloaded from BioQuery: bio.odb.ntu.edu.tw/query, or a config text, json, or yaml file.</p>   
+</div></td>   
+</tr>   
+<tr class="even">   
+<td>return_type</td>   
+<td>&quot;site2map&quot;   
+<div class="pm-markdown docs-request-table__desc">   
+<p>return data type, here, &quot;site2map&quot; can return png, jpeg, svg, or pdf</p>   
+</div></td>   
+</tr>   
+<tr class="odd">   
+<td>legend_pos</td>   
+<td>&quot;bottom&quot;   
+<div class="pm-markdown docs-request-table__desc">   
+<p>Optional. Legend positon: &quot;none&quot; (no legend) &quot;bottomright&quot;, &quot;topleft&quot;, &quot;right&quot;, &quot;bottom&quot;, and so on</p>   
+</div></td>   
+</tr>   
+</tbody>   
+</table>
+   
+---   
+   
+   
+## cURL    
+   
+<span class="docs-example__snippet-type"><a name="curl01">Example Request: </a></span><span
+class="docs-example__response-title" title="bioquery site2map">bioquery   
+site2map</span>   
+   
+    curl --location --request POST "https://bio.odb.ntu.edu.tw/api/bioquery/png" \   
+      --form "config=@Your_File_Path" \
+      --form "return_type=\"site2map\"" \   
+      --form "legend_pos=\"bottom\""   
+   
+   
+---   
+   
+## Response   
+   
+![Bioquery site2map with polygonal region](img/ex01_resp.png) {style=text-align:center}
+   
+   
+---   
+   
+# Open API.02 {.tabset .tabset-fade .tabset-pills}   
+   
+---   
+   
+## POST
+   
+---   
+   
+<a name="api02">keyword: </a> _bioquery upload user data_
+   
+   
+**API cURL url: **https://bio.odb.ntu.edu.tw/api/bioquery/png {jpeg, pdf, svg}
+   
+Users can upload community abundance data of species assemblages, which   
+can be combined with ODB data (by 'config' parameter). This combined   
+data then can be used in various statistics or plotting according to   
+'return\_type' parameter. Data format and rules of combination see:   
+<https://bio.odb.ntu.edu.tw/query/?help=user_data>   
+   
+   
+---   
+   
+## Body   
+   
+---   
+   
+   
+<span class="docs-request-body__mode push-half--left">formdata</span>   
+<table>   
+<colgroup>   
+<col width="50%" />   
+<col width="50%" />   
+</colgroup>   
+<tbody>   
+<tr class="odd">   
+<td>config</td>   
+<td><div class="pm-markdown docs-request-table__desc">   
+<p>Query crieteria from bio.odb.ntu.edu.tw/query, or a config text, json, or yaml file.</p>   
+</div></td>   
+</tr>   
+<tr class="even">   
+<td>return_type</td>   
+<td>&quot;site2map&quot;   
+<div class="pm-markdown docs-request-table__desc">   
+<p>return data type, here, &quot;site2map&quot; can return png, jpeg, svg, or pdf</p>   
+</div></td>   
+</tr>   
+<tr class="odd">   
+<td>datasrc</td>   
+<td><div class="pm-markdown docs-request-table__desc">   
+<p>Abundance data csv file of species assemblages. Data format see: <a href="https://bio.odb.ntu.edu.tw/query/?help=user_data" class="uri">https://bio.odb.ntu.edu.tw/query/?help=user_data</a></p>   
+</div></td>   
+</tr>   
+<tr class="even">   
+<td>data_mode</td>   
+<td>&quot;combine&quot;   
+<div class="pm-markdown docs-request-table__desc">   
+<p>Specify how user data combined with ODB data (from config): &quot;indep&quot;, &quot;combine&quot;, &quot;combine_region&quot; or &quot;site&quot;. Details see:<a href="https://bio.odb.ntu.edu.tw/query/?help=user_data" class="uri">https://bio.odb.ntu.edu.tw/query/?help=user_data</a></p>   
+</div></td>   
+</tr>   
+<tr class="odd">   
+<td>data_id</td>   
+<td>&quot;taxon&quot;   
+<div class="pm-markdown docs-request-table__desc">   
+<p>Specify the variable name in datasrc which means species identification (default: &quot;taxon&quot;)</p>   
+</div></td>   
+</tr>   
+<tr class="even">   
+<td>data_val</td>   
+<td>&quot;taxon_count&quot;   
+<div class="pm-markdown docs-request-table__desc">   
+<p>Specify the variable name in datasrc which means species abundance or occurrence (default: &quot;taxon_count&quot;)</p>   
+</div></td>   
+</tr>   
+<tr class="odd">   
+<td>data_group</td>   
+<td>&quot;polyID&quot;   
+<div class="pm-markdown docs-request-table__desc">   
+<p>Specify the grouping variable name in datasrc (default: &quot;polyID&quot;, polygonal region ID in integer)</p>   
+</div></td>   
+</tr>   
+<tr class="even">   
+<td>geopoly</td>   
+<td><div class="pm-markdown docs-request-table__desc">   
+<p>Optional. Can be file specified longitude and latitude of polygonal regions with id, as format &quot;csv_poly&quot; in this example, or a character vector contains geometry text with format &quot;lonlat_poly&quot;, bounding box with format &quot;BBOX&quot; (see next example), or BioQuery downloaded query text file with format &quot;bioquery&quot;.</p>   
+</div></td>   
+</tr>   
+<tr class="odd">   
+<td>format</td>   
+<td>&quot;csv_poly&quot;   
+<div class="pm-markdown docs-request-table__desc">   
+<p>Optional but needed if specify geopoly: &quot;csv&quot; (CSV file with coordinates in geopoly parameter), &quot;csv_poly&quot; (CSV wity column of polygonal ID), &quot;bioquery&quot; (Config file downloaded from BioQuery: bio.odb.ntu.edu.tw/query), &quot;bbox&quot; (bounding box), &quot;lonlat_poly&quot; (string format in geopoly parameter to specify polygonal region, such as geopoly=&quot;(124,125,124.5,124,20,21,22,20);(120,121,122,122.5,120,19,20,22,22,19)&quot;), &quot;kml&quot; (KML file).</p>   
+</div></td>   
+</tr>   
+<tr class="even">   
+<td>grd_sel</td>   
+<td>1   
+<div class="pm-markdown docs-request-table__desc">   
+<p>Optional. Specify grid for data gridding: null (raw data), 0 (0.25-deg), 1 (0.5-deg, default), 2 (1-deg)</p>   
+</div></td>   
+</tr>   
+<tr class="odd">   
+<td>include_poly0</td>   
+<td>false   
+<div class="pm-markdown docs-request-table__desc">   
+<p>Optional. Enable analysis including polyID==0, i.e., also analysis those sites which are outside the given polygonal regions (default: FALSE).</p>   
+</div></td>   
+</tr>   
+</tbody>   
+</table>
+   
+---   
+   
+   
+## cURL    
+   
+<span class="docs-example__snippet-type"><a name="curl02">Example Request: </a></span><span
+class="docs-example__response-title"   
+title="bioquery upload user data">bioquery upload user data</span>   
+   
+    curl --location --request POST "https://bio.odb.ntu.edu.tw/api/bioquery/png" \   
+      --form "config=@Your_File_Path" \
+      --form "return_type=\"site2map\"" \   
+      --form "datasrc=@Your_File_Path" \
+      --form "data_mode=\"combine\"" \   
+      --form "data_id=\"taxon\"" \   
+      --form "data_val=\"taxon_count\"" \   
+      --form "data_group=\"polyID\"" \   
+      --form "geopoly=@Your_File_Path" \
+      --form "format=\"csv_poly\"" \   
+   
+   
+---   
+   
+## Response   
+   
+![User data combined with ODB data with regions respectively](img/ex02_resp.png) {style=text-align:center}
+   
+   
+---   
+   
+# Open API.03 {.tabset .tabset-fade .tabset-pills}   
+   
+---   
+   
+## POST
+   
+---   
+   
+<a name="api03">keyword: </a> _bioquery overlay environmental layer_
+   
+   
+**API cURL url: **https://bio.odb.ntu.edu.tw/api/bioquery/png {jpeg, pdf, svg}
+   
+Environmental (Env) factors can be specified or uploaded and used in   
+succeeding analysis. Specify 'envsrc' which means various sources of env   
+databases compiled by ODB, and 'env\_layer', i.e., the env factors   
+contained in this source. Each env-layer can be applied with spatially   
+kriging, transformed, and scaled. Details see:   
+<https://bio.odb.ntu.edu.tw/query/?help=bioenv>   
+   
+   
+---   
+   
+## Body   
+   
+---   
+   
+   
+<span class="docs-request-body__mode push-half--left">formdata</span>   
+<table>   
+<colgroup>   
+<col width="50%" />   
+<col width="50%" />   
+</colgroup>   
+<tbody>   
+<tr class="odd">   
+<td>config</td>   
+<td><div class="pm-markdown docs-request-table__desc">   
+<p>Query crieteria from bio.odb.ntu.edu.tw/query, or a config text, json, or yaml file.</p>   
+</div></td>   
+</tr>   
+<tr class="even">   
+<td>return_type</td>   
+<td>&quot;site2map&quot;   
+<div class="pm-markdown docs-request-table__desc">   
+<p>return data type, here, &quot;site2map&quot; can return png, jpeg, svg, or pdf</p>   
+</div></td>   
+</tr>   
+<tr class="odd">   
+<td>env_layer</td>   
+<td>&quot;chl&quot;   
+<div class="pm-markdown docs-request-table__desc">   
+<p>Environmental layer name that used in the specified &quot;envsrc&quot;. See BioQuery: bio.odb.ntu.edu.tw/query to find all options for env_layer.</p>   
+</div></td>   
+</tr>   
+<tr class="even">   
+<td>envsrc</td>   
+<td>&quot;nasa_neo&quot;   
+<div class="pm-markdown docs-request-table__desc">   
+<p>Environmental source, either a file with longitude/latitude/(season)/env_layer, or a env database provided (or compiled) by ODB, NTU. Here &quot;nasa_neo&quot; means NASA NEO env data, and we fetch SST data. See BioQuery: bio.odb.ntu.edu.tw/query to find all options for envsrc.</p>   
+</div></td>   
+</tr>   
+<tr class="odd">   
+<td>by_season</td>   
+<td>true   
+<div class="pm-markdown docs-request-table__desc">   
+<p>Optional. Plot with seasonality facets, if &quot;season&quot; in specified &quot;envsrc&quot;. (default is true)</p>   
+</div></td>   
+</tr>   
+<tr class="even">   
+<td>scale_res</td>   
+<td>&quot;large&quot;   
+<div class="pm-markdown docs-request-table__desc">   
+<p>Optional. Coastline resolution: &quot;small&quot;, &quot;medium&quot;, &quot;large&quot;</p>   
+</div></td>   
+</tr>   
+<tr class="odd">   
+<td>getenv_options</td>   
+<td>'{\&quot;en_trans\&quot;:[\&quot;1\&quot;], \&quot;scale_fun\&quot;:[\&quot;log\&quot;], \&quot;scale_mul\&quot;:[\&quot;1000\&quot;], \&quot;en_kriging\&quot;:[\&quot;0\&quot;]}'   
+<div class="pm-markdown docs-request-table__desc">   
+<p>Optional. Json string that specify env_layer need transformation (en_trans: 1/0) by multipling a factor (scal_mul), by functions (scale_fun: &quot;log&quot;, &quot;sqrt&quot;, &quot;exp&quot;,...), or kriging (en_kriging: 1/0). Note: kriging is time-consuming</p>   
+</div></td>   
+</tr>   
+<tr class="even">   
+<td>geopoly</td>   
+<td>&quot;BBOX (110,15,130,35)&quot;   
+<div class="pm-markdown docs-request-table__desc">   
+<p>Optional. Plot map within a bounding box</p>   
+</div></td>   
+</tr>   
+<tr class="odd">   
+<td>format</td>   
+<td>&quot;bbox&quot;   
+<div class="pm-markdown docs-request-table__desc">   
+<p>Optional but needed if specify geopoly: &quot;csv&quot; (CSV file with coordinates in geopoly parameter), &quot;csv_poly&quot; (CSV wity column of polygonal ID), &quot;bioquery&quot; (Config file downloaded from BioQuery: bio.odb.ntu.edu.tw/query), &quot;bbox&quot; (bounding box), &quot;lonlat_poly&quot; (string format in geopoly parameter to specify polygonal region, such as geopoly=&quot;(124,125,124.5,124,20,21,22,20);(120,121,122,122.5,120,19,20,22,22,19)&quot;), &quot;kml&quot; (KML file).</p>   
+</div></td>   
+</tr>   
+<tr class="even">   
+<td>en_poly_border</td>   
+<td>false   
+<div class="pm-markdown docs-request-table__desc">   
+<p>Optional. Plot outlines of polygonal region or not.</p>   
+</div></td>   
+</tr>   
+<tr class="odd">   
+<td>enlarge_poly_bbox</td>   
+<td>false   
+<div class="pm-markdown docs-request-table__desc">   
+<p>Optional . Enlarge plotting content to include bounding box inside.</p>   
+</div></td>   
+</tr>   
+</tbody>   
+</table>
+   
+---   
+   
+   
+## cURL    
+   
+<span class="docs-example__snippet-type"><a name="curl03">Example Request: </a></span><span
+class="docs-example__response-title"   
+title="bioquery overlay environmental layer">bioquery overlay   
+environmental layer</span>   
+   
+    curl --location --request POST "https://bio.odb.ntu.edu.tw/api/bioquery/png" \   
+      --form "return_type=\"site2map\"" \   
+      --form "env_layer=\"chl\"" \   
+      --form "envsrc=\"nasa_neo\"" \   
+      --form "by_season=true" \   
+      --form "scale_res=\"large\"" \   
+      --form "getenv_options='{\\\"en_trans\\\":[\\\"1\\\"], \\\"scale_fun\\\":[\\\"log\\\"], \\\"scale_mul\\\":[\\\"1000\\\"], \\\"en_kriging\\\":[\\\"0\\\"]}'" \   
+      --form "geopoly=\"BBOX (110,15,130,35)\"" \   
+      --form "format=\"bbox\"" \   
+      --form "en_poly_border=false" \   
+   
+   
+---   
+   
+## Response   
+   
+![SST, or other env layer overlay on map with seasonality](img/ex03_resp.png) {style=text-align:center}
+   
+---   
+   
