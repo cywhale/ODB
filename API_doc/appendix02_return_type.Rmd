@@ -1,0 +1,61 @@
+---
+title: "API return_type"
+author: "cywhale"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+---   
+
+
+# Appendix 
+
+---  
+
+#### Open API return_type definition
+
+---  
+
+<a name="return_type">keyword: </a> _return type argument_
+
+return_type: A character string indicated data return type, including:
+
+  - **_metadata_** return metadata of ODB bio-database. (default)
+
+  - **_citation_** return references of data source citations in ODB bio-database.
+
+  - **_taxonomy_** return taxonomy (family, genus, species) in ODB bio-database.
+
+  - **_user\_data_** return user data after manipulation
+
+  - **_env\_list_** return brief of env data ODB have, that can used to applied to env_layer and envsrc.
+
+  - **_env_** return env data by specifying env_layer and envsrc
+
+  - **_site_** return geo-location of sites.
+
+  - **_site2map_** return the plot of site map @seealso geo2map.
+
+  - **_site2wwwmap_** return the interactive html of site map. API cURL endpoint should be '\bin' to return a self-contained html file. @seealso geo2wwwmap.
+
+  - **_rarefaction\_plot_** return the plot of rarefaction curves evaluated by iNEXT.
+
+  - **_estimate\_diversity\_by\_samplesize_** return estimation of diversity from iNEXT rarefacition by sample size.
+
+  - **_estimate\_diversity\_by\_coverage_** return estimation of diversity from iNEXT rarefacition by sample coverage.
+
+  - **_community\_stats_** return community abundance and diversity data with env
+
+  - **_community\_stats\_bubble_** return bubble plot for community abundance or diversity on map @seealso geo2map.
+
+  - **_community\_rda\_plot_** return ordination plot by Redundancy Analysis (RDA) for species composition and env
+
+  - **_community\_rda_** return a two-level list including all RDA statistics (should be a multi-level json to client). 'community_rda_axis', as well as with '_species' and '_env', are allowed to return only one table for site scores, species scores, and env fitted on the RDA axes, respectively.
+
+  - **_abundance\_stats_** return only community abundance with env (i.e, without calculating diversity and therefore would be faster).
+
+  - **_abundance\_bubble_** return bubble plot for community abundance on map. @seealso geo2map.
