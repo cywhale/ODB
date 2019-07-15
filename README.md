@@ -1,7 +1,13 @@
 # ODB
 My R works in Ocean Data Bank (ODB), Institute of Oceanography, NTU, Taiwan
 
-BioQuery: a Shiny App <a href="https://bio.odb.ntu.edu.tw/query" target="_blank">https://bio.odb.ntu.edu.tw/query</a>
+BioQuery: an integrated Open API front-end with Shiny App for bio-query (BioQuery) <a href="https://bio.odb.ntu.edu.tw/query" target="_blank">https://bio.odb.ntu.edu.tw/query</a>
+
+    - ?map https://bio.odb.ntu.edu.tw/query?map directly link to map query interface for bio-data, ODB
+    
+    - ?api(=1 - 7) directly open API document 
+    
+    - ?help(=1 - 9)&lang=(EN, TW, which can be omitted if EN: English is selected; only TW: traditional Chinese need to be specified) directly open Help and tips manual
 
 #### Links
 1. Shiny R Dashboard for bio-database of ODB, linking PostgreSQL
