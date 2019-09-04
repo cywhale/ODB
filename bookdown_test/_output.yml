@@ -1,0 +1,10 @@
+bookdown::gitbook:
+  css: copkey_book.css
+  split_by: rmd
+  config:
+    toc:
+      before: |
+        <li><a href="./">HOME</a></li>
+      after: null
+    download: no #["pdf", "epub"]
+    sharing: no

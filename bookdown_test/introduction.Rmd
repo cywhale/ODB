@@ -1,0 +1,7 @@
+
+# **INTRODUCTION**
+
+Calanoid copepods are a well-recognized taxonomic group of Crustacea.  They were already placed, with one cyclopoid (*Scribella*) and five calanoid (*Acartia, Calanus, Candacia, Euchirus *(= *Euchaeta*)*, *and *Pontella*) genera, under a single taxonomic unit, the Calanidae, by Dana (1846).  Giesbrecht and Sars are the two early principal contributors to the taxonomy of Copepoda, including the Calanoida.
+
+Based on the location of the body articulation, Giesbrecht (1883) divided copepods into two groups, the Gymnopleoden and Podopleoden.  All copepods, characterized by an articulation between the fifth pedigerous (leg-bearing) somite and genital somite, separating the body into an anterior part (prosome) and a posterior part (urosome), were placed under the suborder Gymnoplea.  Podoplea contained all other copepods having this articulation located between the fourth and fifth pedigerous somites.  According to the structure of antennules in males, Giesbrecht further divided the Gymnoplea into two tribes, the Amphaskandria (males with both antennules similar) and Heterarthrandria (males with one of the antennules modified).
+

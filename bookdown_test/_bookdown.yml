@@ -1,0 +1,6 @@
+book_filename: "test"
+language:
+  ui:
+    chapter_name: ""
+delete_merged_file: true
+rmd_files: ["index.Rmd", "introduction.Rmd", "test-words.Rmd"]
