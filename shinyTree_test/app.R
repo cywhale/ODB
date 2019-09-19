@@ -1,4 +1,5 @@
 # shinyTree cannot render twice after re-open wellpanel
+# solved by https://github.com/shinyTree/shinyTree/issues/87
 library(shiny)
 library(shinyTree)
 
@@ -61,6 +62,7 @@ server <- function(input, output) {
   })
   
   output$tree_List <- renderTree({
+    input$tree_apply ## include this, that can render tree after close/open 
     treex
   })
 }
