@@ -1,0 +1,23 @@
+R.cache v0.14.0 successfully loaded. See ?R.cache for help.
+Linking to GEOS 3.5.0, GDAL 2.2.2, PROJ 4.9.2
+
+Listening on http://127.0.0.1:32798
+Warning: Error in value[[3L]]: Couldn't normalize path in `addResourcePath`, with arguments: `prefix` = 'leaflet-provi$
+  106: stop
+  105: value[[3L]]
+  104: tryCatchOne
+  103: tryCatchList
+  102: tryCatch
+  101: addResourcePath
+  100: FUN
+   99: lapply
+   98: renderWidget
+   97: transform
+   96: func
+   94: f
+   93: Reduce
+   84: do
+   83: hybrid_chain
+   82: origRenderFunc
+   81: output$eview-map
+    1: runApp
