@@ -9,11 +9,22 @@
 unzip geoserver-2.20.1-wps-plugin.zip 
 unzip geoserver-2.20-SNAPSHOT-mbtiles-plugin.zip
 unzip geoserver-2.20-SNAPSHOT-mbtiles-store-plugin.zip
-# https://github.com/xerial/sqlite-jdbc/releases
-wget https://github.com/xerial/sqlite-jdbc/releases/download/3.36.0.3/sqlite-jdbc-3.36.0.3.jar
+# Can ignore this (3.34.0 version works): https://github.com/xerial/sqlite-jdbc/releases
+# wget https://github.com/xerial/sqlite-jdbc/releases/download/3.36.0.3/sqlite-jdbc-3.36.0.3.jar
 # remove original sqlite-jdbc-3.34.0.jar
-mv sqlite-jdbc-3.34.0.jar ~/tmp/
+# mv sqlite-jdbc-3.34.0.jar ~/tmp/
 # done
+
+# Got POST error and cause UI click button not work (each form with POST request got error)
+# Error message: geoserver POST STATUS: 400 MESSAGE: Origin does not correspond to request SERVLET: dispatcher
+# https://docs.geoserver.org/latest/en/user/security/webadmin/csrf.html
+# nano webapps/geoserver/WEB-INF/web.xml
+```
+    <context-param>
+      <param-name>GEOSERVER_CSRF_WHITELIST</param-name>
+      <param-value>example.org</param-value>
+    </context-param>
+```
 
 # Exclude GeoPkg (GeoPackage) plugin, i.e. geoserver-2.20-SNAPSHOT-geopkg-plugin.zip
 # cause error: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'geopkgProcess'
