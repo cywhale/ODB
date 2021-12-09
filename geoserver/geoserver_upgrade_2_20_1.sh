@@ -22,6 +22,18 @@ mv sqlite-jdbc-3.34.0.jar ~/tmp/
 
 
 # Other problems
+# External data_dir # https://docs.geoserver.org/stable/en/user/datadirectory/setting.html
+# sh shutdown.sh && nano ~/.bashrc
+```
+export GEOSERVER_HOME=/usr/share/geoserver
+export GEOSERVER_DATA_DIR=/usr/share/geodata
+```
+source ~/.bashrc
+cd /usr/share/geoserver
+sudo mv data_dir/ ../geodata # or just cp -R...
+chown -R $USER:$USER ../geodata/
+#cd bin && sh startup.sh &
+
 # Password, recorded in 
 # /usr/share/geoserver/data_dir/security/usergroup/default/users.xml
 
