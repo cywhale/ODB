@@ -46,11 +46,32 @@ sudo git stash pop # Note! it's merge!
 #        biigle/maia:${MAIA_VERSION} \
 #
 # && sed -i '/Insert Biigle module service providers/i Biigle\\Modules\\Maia\\MaiaServiceProvider::class,' config/app.php
+# build/config/filesystems.php
+
+```
+        // MAIA_TRAINING_PROPOSAL_STORAGE_DISK
+        'maia-tp' => [
+            'driver' => 'local',
+            'root' => storage_path('app/public/maia-tp-patches'),
+            'url' => env('APP_URL').'/storage/maia-tp-patches',
+            'visibility' => 'public',
+        ],
+        // MAIA_ANNOTATION_CANDIDATE_STORAGE_DISK
+        'maia-ac' => [
+            'driver' => 'local',
+            'root' => storage_path('app/public/maia-ac-patches'),
+            'url' => env('APP_URL').'/storage/maia-ac-patches',
+            'visibility' => 'public',
+        ],
+```
+# and create corresponding directories: under /opt/biigle
+# sudo mkdir storage/app/public/maia-tp-patches;  sudo mkdir storage/app/public/maia-ac-patches
+# sudo chown -R biigle:biigle storage/app/public/maia-*-patches
 # build.sh
 #     --build-arg MAIA_VERSION="^1.17.6" \
 # build/.env
-MAIA_TRAINING_PROPOSAL_STORAGE_DISK=maia-tp-patches
-MAIA_ANNOTATION_CANDIDATE_STORAGE_DISK=maia-ac-patches
+MAIA_TRAINING_PROPOSAL_STORAGE_DISK=maia-tp
+MAIA_ANNOTATION_CANDIDATE_STORAGE_DISK=maia-ac
 
 # Allow new user to sign-up # https://github.com/biigle/core/discussions/338
 BIIGLE_USER_REGISTRATION=true
