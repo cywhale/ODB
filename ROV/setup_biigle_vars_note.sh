@@ -75,6 +75,15 @@ MAIA_ANNOTATION_CANDIDATE_STORAGE_DISK=maia-ac
 
 # Allow new user to sign-up # https://github.com/biigle/core/discussions/338
 BIIGLE_USER_REGISTRATION=true
+# DELETE label-tree id 20 (for example)
+curl -X DELETE -u admin@email:ADMIN_TOKEN -H "Accept: application/json" https://biigle.host/api/v1/label-trees/20
+
+# export volume id 16
+curl -X GET -u admin@email:ADMIN_TOKEN -H "Accept: application/json" https://biigle.host/api/v1/export/volumes?only=16 --output backup_volume_16
+
+
+# Biigle API usage
+# https://biigle.de/doc/api/index.html
 
 # No need (MAIA is a biigle module that can be added by just edit build.sh/build.dockerfile)
 # ==================================================================
