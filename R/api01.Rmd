@@ -1,0 +1,99 @@
+---
+title: "Test internal API, ODB"
+author: "cywhale"
+date: '`r Sys.Date()`'
+output: html_notebook
+---
+
+*odbapi ver:0.74* internal API
+
+```{r}
+library(odbapi)
+print(packageVersion("odbapi"))
+# NOTE: it's an internal API testing code, that cannot run outside intranet.
+
+# simplify scientific name to get taxonomy
+sp <- c('Acartia (Acartiura) sp.', 
+        ' Corycaeus spp.',
+        'Armandia leptocirrus',
+        'Ablennes hians (Valenciennes 1843)', 
+        'Acartia bifilosa var. inermis',
+        'Ceratium vultur var.sumatranum (Steeman Nielsen, 1934)',
+        'Paracalanus nanus (G.O. Sars. 1907)',
+        'Ablennes hians 1843',
+        'Kellicottia longispina  (Kellicott; 1879)')
+
+
+# exactly 'binomial'
+sp2 = sciname_simplify(sp,  simplify_two = TRUE, trim.subgen = TRUE, trim.spp_abbrev = TRUE)
+print(sp2)
+
+```
+
+```{r}
+library(RProtoBuf)
+library(httr)
+args = list(x=sp, simplify_two=TRUE, trim.subgen=TRUE, trim.spp_abbrev=TRUE)
+system.time(
+  req <- POST(
+    url = "https://bio.odb.ntu.edu.tw/ocpu/library/odbapi/R/sciname_simplify/pb",   
+    body = RProtoBuf::serialize_pb(args, NULL),
+    add_headers ("Content-Type" = "application/protobuf")
+  )  
+)
+
+sp2 <- RProtoBuf::unserialize_pb(req$content)
+print(sp2)
+```
+```{r}
+library(curl)
+library(magrittr)
+# https://github.com/jeroen/curl/issues/146
+body <- jsonlite::toJSON(args, auto_unbox = TRUE)
+opts <- list(
+    verbose       = TRUE
+  , post          = TRUE
+  , postfields    = body
+  , postfieldsize = nchar(body)
+  #, proxy         = "<proxy_url>"
+  #, proxyport     = <proxy_port>
+)
+
+system.time({
+  h <- new_handle(customrequest = "POST") %>%
+    handle_setopt(.list = opts) %>%
+    handle_setheaders("Content-Type"="application/json")
+    
+  res1 <- curl_fetch_memory(
+    "https://bio.odb.ntu.edu.tw/ocpu/library/odbapi/R/sciname_simplify/json", handle=h
+  )
+})
+
+jsonlite::fromJSON(rawToChar(res1$content))
+```
+```{r}
+class_name <- c("kingdom", "phylum", "class", "order","family",  "genus",  "species")
+pdx <- taxizify_dt(x = sp2, sel_vars=c("taxon","rank", class_name), append_itis_tsn = TRUE)
+print(pdx)
+```
+```{r}
+system.time(
+  res2 <- POST(
+    url = "https://bio.odb.ntu.edu.tw/ocpu/library/odbapi/R/taxizify_dt/pb",   
+    body = RProtoBuf::serialize_pb(list(
+      x = sp2, sel_vars=c("taxon","rank", class_name), append_itis_tsn = TRUE
+    ), NULL),
+    add_headers ("Content-Type" = "application/protobuf")
+  )  
+)
+```
+
+
+```{r}
+library(diffobj)
+pd2 <- RProtoBuf::unserialize_pb(res2$content)
+print(pd2)
+diffObj(setDT(pd2), pdx)
+# Note that taxize::classification is in prompt, so that cause difference if not manually choose right
+# here "Armandia leptocirrus" is unaccepted input, and "Armandia leptocirris" is accepted name in WORMS
+```
