@@ -4,44 +4,52 @@ title: Infrastructure and Web Applications for Application Programming Interface
 author: "Chiyu Weng 翁其羽"
 date: "`r Sys.Date()`"
 output:
-  html_document:
+  bookdown::word_document2:
     toc: yes
-    df_print: paged
     number_sections: yes
-    css: style.css
+    fig_caption: yes
+    reference_docx: template02.docx
   #pdf_document:
   #  number_sections: yes
   #  latex_engine: xelatex
   #  includes:
   #    in_header: preamble.tex
-  word_document:
+  bookdown::html_document2:
     toc: yes
+    df_print: paged
     number_sections: yes
-    reference_docx: template02.docx
+    css: style.css
 ---
 
 ```{r setup, include=FALSE}
+library(knitr)
 knitr::opts_chunk$set(echo = TRUE)
 
 ```
 
 # Introduction
 
-How can we design an infrastructure that help people easier, more safer, more convenient for adding ideas to use the bio-database of Ocean Data Bank (ODB)? ODB is dedicated to help academia to curate and use the databases whose data is mainly collected through marine research vessels which are supported by Ministry of Science and Technology (MOST), Taiwan. The data of ODB is in privacy under the restriction of the data release policies of MOST, and ODB compiles raw data after reviewing someone’s application. This restriction limits open usage of the information services we deliver. To bridge ODB’s information services between open usage and databases is a prerequisite, whereas a well-defined application programming interface (API) is often the answer (Box 1.1). In addition, ODB’s information services are usually not for implementing new theory or algorithm on scientific researches, but for helping academia to use data, check data patterns, and create data modeling in their researches. These considerations form the basis for how to construct the infrastructure of information services to use the bio-database of ODB:
+How can we design an infrastructure that help people easier, more safer, more convenient for adding ideas to use the bio-database of Ocean Data Bank (ODB)? ODB is dedicated to help academia to curate and use the databases whose data is mainly collected through marine research vessels which are supported by Ministry of Science and Technology (MOST), Taiwan. The data of ODB is in privacy under the restriction of the data release policies of MOST, and ODB compiles raw data after reviewing someone’s application. This restriction limits open usage of the information services we deliver. To bridge ODB’s information services between open usage and databases is a prerequisite, whereas a well-defined application programming interface (API) is often the answer ([Box 1.1](#box1-1)). In addition, ODB’s information services are usually not for implementing new theory or algorithm on scientific researches, but for helping academia to use data, check data patterns, and create data modeling in their researches. These considerations form the basis for how to construct the infrastructure of information services to use the bio-database of ODB:
 
 ::: {.infobox data-latex=""}
 
 :::: {.box_main custom-style="box1_main"}
-Box1.1
+[Box1.1]{#box1-1}
 ::::
 
 :::: {custom-style="box1"}
   &check; API is a set of interfacing specifications for machine-to-machine communications. Here we focus on web API, i.e., data transport upon HTTP request/response structure. Most popular web API protocol is REST (Representational State Transfer), and increasingly used, GraphQL API. Commonly used data formats are JSON and XML.
 
-  &check; API can provide a secure way to access the bio-database (internal APIs, Fig. 1.1) with authority management. On the other hand, API can also provide open-access methods for public information compiled from the bio-database (public APIs).
+  &check; API can provide a secure way to access the bio-database (internal APIs, Fig. \@ref(fig:fig-webapi)) with authority management. On the other hand, API can also provide open-access methods for public information compiled from the bio-database (public APIs).
 ::::
 
 :::
+
+<br><br>
+
+```{r fig-webapi, echo=FALSE, message=FALSE, warning=FALSE, out.width="40%", fig.cap = "Simplified schematic for web API of the bio-database"}
+knitr::include_graphics("img/api_webapp01x.png")
+```
 
 
 ```{r, child=c('Re-structuring-bio-database.Rmd')}
