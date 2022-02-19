@@ -1,0 +1,65 @@
+---
+title: Infrastructure and Web Applications for Application Programming Interface (API)
+  of Bio-database, Ocean Data Bank (ODB) <br><br>海洋資料庫生物資料庫應用程式介面之基礎建構與網際網路應用
+author: "Chiyu Weng 翁其羽"
+date: "`r Sys.Date()`"
+output:
+  word_document:
+    toc: yes
+    number_sections: yes
+  #  reference_docx: template02.docx
+  #pdf_document:
+  #  number_sections: yes
+  #  latex_engine: xelatex
+  #  includes:
+  #    in_header: preamble.tex
+  html_document:
+    toc: yes
+    df_print: paged
+    number_sections: yes
+    css: style.css
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+# Introduction
+
+How can we design an infrastructure that help people easier, more safer, more convenient for adding ideas to use the bio-database of Ocean Data Bank (ODB)? ODB is dedicated to help academia to curate and use the databases whose data is mainly collected through marine research vessels which are supported by Ministry of Science and Technology (MOST), Taiwan. The data of ODB is in privacy under the restriction of the data release policies of MOST, and ODB compiles raw data after reviewing someone’s application. This restriction limits open usage of the information services we deliver. To bridge ODB’s information services between open usage and databases is a prerequisite, whereas a well-defined application programming interface (API) is often the answer (Box 1.1). In addition, ODB’s information services are usually not for implementing new theory or algorithm on scientific researches, but for helping academia to use data, check data patterns, and create data modeling in their researches. These considerations form the basis for how to construct the infrastructure of information services to use the bio-database of ODB:
+
+::: {.infobox .note data-latex="note"}
+
+### Box1.1 {-}
+
+  &check; API is a set of interfacing specifications for machine-to-machine communications. Here we focus on web API, i.e., data transport upon HTTP request/response structure. Most popular web API protocol is REST (Representational State Transfer), and increasingly used, GraphQL API. Commonly used data formats are JSON and XML.
+
+  &check; API can provide a secure way to access the bio-database (internal APIs, Fig. 1.1) with authority management. On the other hand, API can also provide open-access methods for public information compiled from the bio-database (public APIs).
+
+:::
+
+# **Re-structuring bio-database**
+
+## *Mutating a new bio-database on PostgreSQL* 
+
+The bio-database of ODB had been constructed since 2009 and completely set-up on Microsoft SQL Server since 2015. The data curation is basically done by a Microsoft C# program. These protocols of data curation was documented in圖輯. For developing an open cross-platform framework for web APIs of bio-database, first, we mutated a bio-database on PostgreSQL, i.e., exported from SQL Server, and then re-imported to a new database by using PostgreSQL.
+
+::: {.infobox .note data-latex="note"}
+
+### Box2.1 {-}
+
+#### Web APIs of bio-database {-}
+
+  &check; API is a set of interfacing specifications for machine-to-machine communications. Here we focus on web API, i.e., data transport upon HTTP request/response structure. Most popular web API protocol is REST (Representational State Transfer), and increasingly used, GraphQL API. Commonly used data formats are JSON and XML.
+
+  &check; API can provide a secure way to access bio-database (internal APIs, Fig. 1.1) with authority management. On the other hand, API can also provide open-access methods for public information compiled from bio-database (public APIs).
+
+#### Why not just use original Microsoft SQL Server as backend database for developing APIs of bio-database? {-}
+
+  &check; SQL Server is a commercial software with annual license fees.
+
+  &check; SQL Server is suited for the Microsoft Server based framework, but not for an open cross-platform framework.  
+
+:::
+

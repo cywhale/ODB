@@ -1,0 +1,19 @@
+h1 {
+  text-align: center;
+}
+
+.infobox {
+  padding: 1em;
+  border: 2px solid orange;
+  border-radius: 10px;
+}
+
+.box_main {
+  font-weight: 600;
+  color: rgb(79, 129, 189);
+}
+
+.box_submain {
+  font-style: italic;
+  color: rgb(79, 129, 189);
+}

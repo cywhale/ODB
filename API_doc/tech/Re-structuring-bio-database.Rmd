@@ -1,0 +1,39 @@
+
+# **Re-structuring bio-database**
+
+## *Mutating a new bio-database on PostgreSQL* 
+
+The bio-database of ODB had been constructed since 2009 and completely set-up on Microsoft SQL Server since 2015. The data curation is basically done by a Microsoft C# program. These protocols of data curation was documented in 圖輯. For developing an open cross-platform framework for web APIs of bio-database, first, we mutated a bio-database on PostgreSQL, i.e., exported from SQL Server, and then re-imported to a new database by using PostgreSQL.
+
+::: {.infobox data-latex=""}
+
+:::: {.box_main custom-style="box1_main"}
+Box2.1
+::::
+
+
+:::: {.box_submain custom-style="box1_sect"}
+Web APIs of bio-database
+::::
+
+
+:::: {custom-style="box1_inner"}
+  &check; API is a set of interfacing specifications for machine-to-machine communications. Here we focus on web API, i.e., data transport upon HTTP request/response structure. Most popular web API protocol is REST (Representational State Transfer), and increasingly used, GraphQL API. Commonly used data formats are JSON and XML.
+
+  &check; API can provide a secure way to access bio-database (internal APIs, Fig. 1.1) with authority management. On the other hand, API can also provide open-access methods for public information compiled from bio-database (public APIs).
+::::
+
+
+:::: {.box_submain custom-style="box1_sect"}
+Why not just use original Microsoft SQL Server as backend database for developing APIs of bio-database?
+::::
+
+
+:::: {custom-style="box1"}
+  &check; SQL Server is a commercial software with annual license fees.
+
+  &check; SQL Server is suited for the Microsoft Server based framework, but not for an open cross-platform framework.  
+::::
+
+:::
+
