@@ -27,3 +27,4 @@ node_modules
 **/__pycache__
 **/dist
 **/dist_*
+.Rproj.user

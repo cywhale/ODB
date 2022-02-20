@@ -4,10 +4,10 @@ title: Infrastructure and Web Applications for Application Programming Interface
 author: "Chiyu Weng 翁其羽"
 date: "`r Sys.Date()`"
 output:
-  word_document:
+  bookdown::word_document2:
     toc: yes
     number_sections: yes
-  #  reference_docx: template02.docx
+    fig_caption: yes
   #pdf_document:
   #  number_sections: yes
   #  latex_engine: xelatex
@@ -18,6 +18,10 @@ output:
     df_print: paged
     number_sections: yes
     css: style.css
+  word_document:
+    toc: yes
+    number_sections: yes
+  # reference_docx: template02.docx
 ---
 
 ```{r setup, include=FALSE}
@@ -35,9 +39,22 @@ How can we design an infrastructure that help people easier, more safer, more co
 
   &check; API is a set of interfacing specifications for machine-to-machine communications. Here we focus on web API, i.e., data transport upon HTTP request/response structure. Most popular web API protocol is REST (Representational State Transfer), and increasingly used, GraphQL API. Commonly used data formats are JSON and XML.
 
-  &check; API can provide a secure way to access the bio-database (internal APIs, Fig. 1.1) with authority management. On the other hand, API can also provide open-access methods for public information compiled from the bio-database (public APIs).
+  &check; API can provide a secure way to access the bio-database (internal APIs, Fig. \@ref(fig:fig-webapi)) with authority management. On the other hand, API can also provide open-access methods for public information compiled from the bio-database (public APIs).
 
 :::
+
+<br><br>
+
+```{r fig-webapi, echo=FALSE, message=FALSE, warning=FALSE, out.width="40%", fig.cap = "Simplified schematic for web API of the bio-database"}
+knitr::include_graphics("img/api_webapp01x.png")
+```
+
+And see Table \@ref(tab:mtcars).
+
+```{r mtcars, echo=FALSE}
+knitr::kable(mtcars[1:5, 1:5], caption = "The mtcars data.")
+```
+
 
 # **Re-structuring bio-database**
 

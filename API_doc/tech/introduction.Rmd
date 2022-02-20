@@ -9,16 +9,13 @@ output:
     number_sections: yes
     fig_caption: yes
     reference_docx: template02.docx
-  #pdf_document:
-  #  number_sections: yes
-  #  latex_engine: xelatex
-  #  includes:
-  #    in_header: preamble.tex
   bookdown::html_document2:
     toc: yes
     df_print: paged
     number_sections: yes
     css: style.css
+  word_document:
+    toc: yes
 ---
 
 ```{r setup, include=FALSE}
@@ -49,6 +46,12 @@ How can we design an infrastructure that help people easier, more safer, more co
 
 ```{r fig-webapi, echo=FALSE, message=FALSE, warning=FALSE, out.width="40%", fig.cap = "Simplified schematic for web API of the bio-database"}
 knitr::include_graphics("img/api_webapp01x.png")
+```
+
+And see Table \@ref(tab:mtcars).
+
+```{r mtcars, echo=FALSE}
+knitr::kable(mtcars[1:5, 1:5], caption = "The mtcars data.")
 ```
 
 
