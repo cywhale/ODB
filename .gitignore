@@ -28,3 +28,5 @@ node_modules
 **/dist
 **/dist_*
 .Rproj.user
+.Rprofile
+

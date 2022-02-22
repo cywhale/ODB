@@ -4,20 +4,20 @@ title: Infrastructure and Web Applications for Application Programming Interface
 author: "Chiyu Weng 翁其羽"
 date: "`r Sys.Date()`"
 output:
-  bookdown::word_document2:
-    toc: yes
-    number_sections: yes
-    fig_caption: yes
-  #pdf_document:
-  #  number_sections: yes
-  #  latex_engine: xelatex
-  #  includes:
-  #    in_header: preamble.tex
   html_document:
     toc: yes
     df_print: paged
     number_sections: yes
     css: style.css
+  #pdf_document:
+  #  number_sections: yes
+  #  latex_engine: xelatex
+  #  includes:
+  #    in_header: preamble.tex
+  bookdown::word_document2:
+    toc: yes
+    number_sections: yes
+    fig_caption: yes
   word_document:
     toc: yes
     number_sections: yes
@@ -41,6 +41,8 @@ How can we design an infrastructure that help people easier, more safer, more co
 
   &check; API can provide a secure way to access the bio-database (internal APIs, Fig. \@ref(fig:fig-webapi)) with authority management. On the other hand, API can also provide open-access methods for public information compiled from the bio-database (public APIs).
 
+  [(Test fig1)](#fig:fig-webapi)
+
 :::
 
 <br><br>
@@ -53,6 +55,15 @@ And see Table \@ref(tab:mtcars).
 
 ```{r mtcars, echo=FALSE}
 knitr::kable(mtcars[1:5, 1:5], caption = "The mtcars data.")
+```
+
+And see Table \@ref(tab:mtcars).
+  [(Test table1)](#tab:mtcars)
+
+
+```{r table2, echo=FALSE, tab.cap = "An another table"}
+flextable::flextable(mtcars[1:5, 1:5]) #%>% flextable::set_caption("The mtcars data.") #%>%
+  #flextable::theme_vanilla()
 ```
 
 
