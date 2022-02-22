@@ -4,6 +4,11 @@ title: Infrastructure and Web Applications for Application Programming Interface
 author: "Chiyu Weng 翁其羽"
 date: "`r Sys.Date()`"
 output:
+  officedown::rdocx_document:
+    toc: yes
+    number_sections: yes
+    fig_caption: yes
+    reference_docx: template02.docx
   bookdown::word_document2:
     toc: yes
     number_sections: yes
@@ -21,6 +26,7 @@ output:
 ```{r setup, include=FALSE}
 library(knitr)
 library(magrittr)
+library(officedown)
 knitr::opts_chunk$set(echo = TRUE)
 
 ```
