@@ -51,7 +51,8 @@ taxon_group:
 
 ``` {r sqlServer2postgres}
 # NOW in Ubuntu, this driver is not support old SQL Serve 2008 R2. It only works in Windows
+# if on Ubuntu, the driver setting is in /etc/odbcinst.ini, e.g. driver={ODBC Driver 18 for SQL Server}
 library(RODBC)
-ms_conn <- odbcDriverConnect(paste0('driver={ODBC Driver 18 for SQL Server};server=', sqlServerHost,  ';database=', sqlServerDB, ';uid=', sqlServerUser, ';pwd=', sqlServerPass))
+ms_conn <- odbcDriverConnect(paste0('driver={SQL Server};server=', sqlServerHost,  ';database=', sqlServerDB, ';uid=', sqlServerUser, ';pwd=', sqlServerPass))
 
 ```

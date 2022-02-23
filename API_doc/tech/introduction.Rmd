@@ -9,6 +9,13 @@ output:
     number_sections: yes
     fig_caption: yes
     reference_docx: template02.docx
+    plots:
+      style: Normal
+      align: center
+      caption:
+       style: Image Caption
+       pre: 'Fig. '
+       sep: ' '
   bookdown::word_document2:
     toc: yes
     number_sections: yes
