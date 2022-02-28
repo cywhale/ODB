@@ -1,3 +1,8 @@
+---
+output:
+  word_document: default
+  html_document: default
+---
 
 # **Re-structuring bio-database**
 
@@ -17,7 +22,7 @@ Box2.1
 Why not just use original Microsoft SQL Server as backend database for developing APIs of bio-database?
 ::::
 
-:::: {custom-style="box1"}
+:::: {custom-style="box1_inner"}
   &check; SQL Server is a commercial software with annual license fees.
 
   &check; SQL Server is suited for the Microsoft Server based framework, but not for an open cross-platform framework.  
@@ -49,10 +54,43 @@ taxon_group:
 
 4. taxa_data:
 
-``` {r sqlServer2postgres}
-# NOW in Ubuntu, this driver is not support old SQL Serve 2008 R2. It only works in Windows
-# if on Ubuntu, the driver setting is in /etc/odbcinst.ini, e.g. driver={ODBC Driver 18 for SQL Server}
-library(RODBC)
-ms_conn <- odbcDriverConnect(paste0('driver={SQL Server};server=', sqlServerHost,  ';database=', sqlServerDB, ';uid=', sqlServerUser, ';pwd=', sqlServerPass))
+``` {r sqlServer2postgres, message=FALSE, warning=FALSE}
+# NOW on Ubuntu, this driver not support old SQL Server 2008-R2. It only works on Windows
+# On Ubuntu, the driver setting is in /etc/odbcinst.ini, e.g. driver={ODBC Driver 18 for SQL Server}
+library(RODBC)      #R interface of ODBC driver to connect SQL Server
+library(sqldf)      #runing SQL statements on R data frames
+library(data.table) #data.table is superb fast in R data manipulation
+library(magrittr)   #pipe function
+ms_conn <- 
+  paste0('driver={SQL Server};server=', sqlServerHost,
+         ';database=', sqlServerDB,
+         ';uid=', sqlServerUser,
+         ';pwd=', sqlServerPass) %>%
+  odbcDriverConnect()
+
+# Query all taxonomic abundance in SQL server
+taxa_data <- sqlQuery(ms_conn, 'select * from dbo.Taxa_record') %>% setDT()
+
+# Query site
+cast_site <- sqlQuery(ms_conn, 'select * from dbo.Cast') %>% setDT()
+
+close(ms_conn)
+
+```
+::: {custom-style="Table Caption"}
+Table `r run_bookmark("taxa_data", tab_zz)` Taxaonomic abundance in bio-database
+:::
+
+```{r taxa_data, echo=FALSE, tab.id='taxa_data', label='taxa_data'}
+head(taxa_data[, .(taxarec_id, cast_id, taxonomic_name, taxon_count, original_unit)])
+
+```
+
+::: {custom-style="Table Caption"}
+Table `r run_bookmark("cast_site", tab_zz)` Casting sites in bio-database
+:::
+
+```{r cast_site, echo=FALSE, tab.id='cast_site', label='cast_site'}
+head(cast_site[, .(cast_id, station_id, date, depth_lower_bound, mesh_size, gear_type)])
 
 ```

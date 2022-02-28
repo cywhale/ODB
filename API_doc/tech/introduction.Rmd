@@ -6,15 +6,24 @@ date: "`r Sys.Date()`"
 output:
   officedown::rdocx_document:
     toc: yes
-    number_sections: yes
+    number_section: yes
+    reference_num: yes
     fig_caption: yes
     reference_docx: template02.docx
+    tables:
+      style: Table
+      layout: autofit
+      width: 1.0
+      caption:
+       style: Table Caption
+       pre: 'tab.'
+       sep: ' '
     plots:
       style: Normal
       align: center
       caption:
        style: Image Caption
-       pre: 'Fig. '
+       pre: 'fig.'
        sep: ' '
   bookdown::word_document2:
     toc: yes
@@ -34,11 +43,28 @@ output:
 library(knitr)
 library(magrittr)
 library(officedown)
+library(officer)
 knitr::opts_chunk$set(echo = TRUE)
-
+#officedown issue:60 #https://github.com/davidgohel/officedown/issues/60
+fig_zz <- list(
+  run_word_field("STYLEREF 1 \\s"),
+  ftext("."),
+  run_autonum(seq_id = "fig", start_at = 1, pre_label = "", post_label = "")
+)
+tab_zz <- list(
+  run_word_field("STYLEREF 1 \\s"),
+  ftext(""),
+  run_autonum(seq_id = "table", start_at = 1, pre_label = "", post_label = "")
+)
 ```
+<!---BLOCK_TOC{level: 2}--->
+
+
+\newpage
 
 # Introduction
+
+## An infrastructure for information services of ODB's bio-database
 
 How can we design an infrastructure that help people easier, more safer, more convenient for adding ideas to use the bio-database of Ocean Data Bank (ODB)? ODB is dedicated to help academia to curate and use the databases whose data is mainly collected through marine research vessels which are supported by Ministry of Science and Technology (MOST), Taiwan. The data of ODB is in privacy under the restriction of the data release policies of MOST, and ODB compiles raw data after reviewing someone’s application. This restriction limits open usage of the information services we deliver. To bridge ODB’s information services between open usage and databases is a prerequisite, whereas a well-defined application programming interface (API) is often the answer ([Box 1.1](#box1-1)). In addition, ODB’s information services are usually not for implementing new theory or algorithm on scientific researches, but for helping academia to use data, check data patterns, and create data modeling in their researches. These considerations form the basis for how to construct the infrastructure of information services to use the bio-database of ODB:
 
@@ -62,13 +88,45 @@ How can we design an infrastructure that help people easier, more safer, more co
 
 ::: {.fbox data-latex="" custom-style="fig1"}
 
-```{r fig-webapi, echo=FALSE, message=FALSE, warning=FALSE, out.width="40%", fig.cap = "Simplified schematic for web API of the bio-database"}
+```{r fig-webapi, echo=FALSE, message=FALSE, warning=FALSE, fig.id='fig1', label='fig1'}
 knitr::include_graphics("img/api_webapp01x.png")
 ```
 :::
+
+::: {custom-style="Image Caption"}
+Fig. `r run_bookmark("fig-webapi", fig_zz)` Simplified schematic for web API of the bio-database
+:::
+
+<br>
+
+(1)	Don’t reinvent the wheel: ODB’s information services should be focused on problem solving. “Don’t reinvent the wheel” here means use existing, proven, and open source software (OSS) to get solutions. There are many OSS packages in data manipulation, data visualization, database-engine wrapper, Geographic Information System (GIS) processing, and statistics which are the major fields of data science that used for ecological applications. To be able to add these OSS packages upon the infrastructure in a more flexible way facilitate us to bring ideas into practice.
+
+(2)	Faster development and deployment: It’s practical to design the infrastructure of ODB’s information services under the premise that most of the researchers are not programmers and no need to have background for database when using the data. But the researchers usually have to demonstrate their ideas, to check data patterns, and to modeling their data more efficiently. That’s why we need to have an infrastructure that is suitable for faster development and deployment.
+
+(3)	Scalability, reproducibility, and consistency: To be easier to combine user data with ODB’s data so that the researchers can check data patterns in different scales. It’s also necessary to make the results be reproducible and consistent. 
+
+We present an infrastructure which may fulfill these requirements for constructing ODB’s information services upon (Fig. 1.2). We use R ()
 
 
 \newpage
 
 ```{r, child=c('Re-structuring-bio-database.Rmd')}
 ```
+
+
+# OpenCPU framework for internal web APIs of bio-database
+
+## OpenCPU server configuration
+
+This is a reference to table \@ref(tab:tab1).
+
+::: {custom-style="Table Caption"}
+Table `r run_bookmark("tab1", tab_zz)` Dataset demo
+:::
+
+
+```{r tab1, echo=FALSE, tab.id='tab1', label='tab1'}
+mtcars[1:5, 1:5]
+```
+
+## Internal API package: odbapi
