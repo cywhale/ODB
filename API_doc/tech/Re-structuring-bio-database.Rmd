@@ -74,7 +74,7 @@ taxa_data <- sqlQuery(ms_conn, 'select * from dbo.Taxa_record') %>% setDT()
 # Query site
 cast_site <- sqlQuery(ms_conn, 'select * from dbo.Cast') %>% setDT()
 
-close(ms_conn)
+close(ms_conn) # Close database connection
 
 ```
 ::: {custom-style="Table Caption"}
@@ -92,5 +92,37 @@ Table `r run_bookmark("cast_site", tab_zz)` Casting sites in bio-database
 
 ```{r cast_site, echo=FALSE, tab.id='cast_site', label='cast_site'}
 head(cast_site[, .(cast_id, station_id, date, depth_lower_bound, mesh_size, gear_type)])
+
+```
+
+``` {r updateTaxonGroup, message=FALSE, warning=FALSE}
+library(RPostgres) #R (using Rcpp) Interface to PostgreSQL
+library(odbapi) # Internal API package, explained in 
+#e.g., A dataset with species Creseis conica, Abudefduf saxatilis, Labidocera gallensis, Metridia macrura, and M. asymmetrica is ready to be imported.
+test_sp <- c("Creseis conica", "Abudefduf saxatilis", 
+             "Labidocera gallensis", "Metridia macrura", "Metridia asymmetrica")
+
+pconn <- dbConnect(drv = RPostgres::Postgres(),
+                   host = odbHost, port = odbPort, dbname = odbBioDB,
+                   user = odbUser, password = odbPass)
+#Got taxonomy of bio-database on PostgreSQL
+taxonomy <- dbReadTable(pconn, name="taxon_group") %>% setDT()
+
+# getSciName will first retrieve query from existed taxonomy in "taxon_group" table of database.
+# For those scientific names not in bio-database, retrieve them by web API of WORMS, Fishbase, GBIF, etc.
+# Internally its magic is done through R pacage "taxize".
+new_taxa <- odbapi::getSciName(dbuser = odbUser, dbhost = odbHost, dbname = odbBioDB,
+                               taxon = test_sp[!test_sp %chin% taxonomy$show_name],
+                               # Only the latter three species are new to the taxon_group table. This check can be ignored.
+                               source = c("worms", "gbif")) # Get taxonomy from international database by its web API
+dbDisconnect(pconn) # Close database connection
+```
+
+::: {custom-style="Table Caption"}
+Table `r run_bookmark("taxonomy", tab_zz)` Update table of taxonomy (parts) in bio-database
+:::
+
+```{r taxonomy, echo=FALSE, tab.id='taxonomy', label='taxonomy'}
+head(new_taxa[, .(query, rank, taxon, class, order, family, genus, species)])
 
 ```
