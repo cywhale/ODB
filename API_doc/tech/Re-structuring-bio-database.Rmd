@@ -97,7 +97,7 @@ head(cast_site[, .(cast_id, station_id, date, depth_lower_bound, mesh_size, gear
 
 ``` {r updateTaxonGroup, message=FALSE, warning=FALSE}
 library(RPostgres) #R (using Rcpp) Interface to PostgreSQL
-library(odbapi) # Internal API package, explained in 
+library(odbapi) #Internal API package, which is explained in 
 #e.g., A dataset with species Creseis conica, Abudefduf saxatilis, Labidocera gallensis, Metridia macrura, and M. asymmetrica is ready to be imported.
 test_sp <- c("Creseis conica", "Abudefduf saxatilis", 
              "Labidocera gallensis", "Metridia macrura", "Metridia asymmetrica")
@@ -107,15 +107,12 @@ pconn <- dbConnect(drv = RPostgres::Postgres(),
                    user = odbUser, password = odbPass)
 #Got taxonomy of bio-database on PostgreSQL
 taxonomy <- dbReadTable(pconn, name="taxon_group") %>% setDT()
-
-# getSciName will first retrieve query from existed taxonomy in "taxon_group" table of database.
-# For those scientific names not in bio-database, retrieve them by web API of WORMS, Fishbase, GBIF, etc.
-# Internally its magic is done through R pacage "taxize".
+#getSciName first retrieve query from existed taxonomy in "taxon_group" table.
+#For those scientific names not in bio-database, retrieve them by web API of WORMS, GBIF, etc. Internally its magic is done through R package "taxize".
 new_taxa <- odbapi::getSciName(dbuser = odbUser, dbhost = odbHost, dbname = odbBioDB,
                                taxon = test_sp[!test_sp %chin% taxonomy$show_name],
-                               # Only the latter three species are new to the taxon_group table. This check can be ignored.
-                               source = c("worms", "gbif")) # Get taxonomy from international database by its web API
-dbDisconnect(pconn) # Close database connection
+#Only the latter three species are new to “taxon_group” table. This check can be ignored.
+                               source = c("worms", "gbif")) #see Table 2.3
 ```
 
 ::: {custom-style="Table Caption"}
@@ -125,4 +122,84 @@ Table `r run_bookmark("taxonomy", tab_zz)` Update table of taxonomy (parts) in b
 ```{r taxonomy, echo=FALSE, tab.id='taxonomy', label='taxonomy'}
 head(new_taxa[, .(query, rank, taxon, class, order, family, genus, species)])
 
+```
+
+
+## *Collaboration with larval fish database*
+
+``` {r larvalFishDistribution, message=FALSE, warning=FALSE}
+fconn <- dbConnect(drv = RPostgres::Postgres(),
+                   host = larvaHost, port = odbPort, dbname = larvaDB,
+                   user = odbUser, password = odbPass)
+# Similar schema to get the same tables from two different data source on PostgreSQL
+# Advantage: to design an integrated API to access them is more easier
+bio_site <- dbReadTable(pconn, name="cast_site") %>% setDT()
+larva_site <- dbReadTable(fconn, name="cast_site") %>% setDT()
+
+library(sf) # R package that handles geometries in GIS applications 
+sites <- list(bio_site[, source:="ODB"], larva_site[, source:="CHIU"]) %>% 
+  rbindlist(use.names = TRUE, fill = TRUE) %>% 
+  .[, season := odbapi::datex_season(date)] %>% # Internal API: convert date to season
+  .[, season := factor(season, levels = c(0,1,2,3),
+                       labels=c("Spring","Summer","Autumn","Winter"))] %>%
+  st_as_sf(coords = c("longitude", "latitude"), crs = 4326)
+bbox <- st_bbox(sites) # Bounding box, used in plotting Fig. 2.4
+dbDisconnect(pconn)    # Close database connection
+dbDisconnect(fconn) 
+
+```
+
+
+::: {.fbox data-latex="" custom-style="fig1"}
+
+```{r fig-distrib, echo=FALSE, message=FALSE, warning=FALSE, fig.id='fig-distrib', label='fig-distrib'}
+library(ggplot2)
+library(rnaturalearth)
+ggplot(data=sites) + 
+    geom_sf(aes(color = season), alpha=0.5, size=0.8) +
+    facet_grid(. ~ source) +
+    geom_path(data = ne_coastline(scale = 'medium'), aes(x = long, y = lat, group = group), color = 'darkgray', size = .3) +
+    coord_sf(xlim=c(bbox[1]-1.5,bbox[3]+1.5), ylim=c(bbox[2]-1.5, bbox[4]+1.5)) + 
+    xlab(NULL) + ylab(NULL) + 
+    scale_color_viridis_d() +
+    guides(color = guide_legend(title="Season:", override.aes = list(size = 2))) + 
+    theme_light() + 
+    theme(legend.position = "bottom", 
+          #legend.key.size = unit(2, "cm"),
+          legend.box.background = element_blank(), 
+          legend.background = element_rect(fill = "transparent", colour = "transparent"),
+          strip.text.y = element_text(angle = 0),#,face = "italic"),
+          axis.text.x  = element_text(family = "sans"),
+          axis.title.x = element_text(family = "sans"),
+          axis.title.y = element_text(family = "sans"),
+          axis.text.y = element_text(family = "sans"),
+    )
+```
+:::
+
+::: {custom-style="Image Caption"}
+Fig. `r run_bookmark("fig-distrib", fig_zz)` Distribution of sampling sites in ODB bio-database
+:::
+
+
+## *Taxonomic composition of bio-database*
+
+ODB bio-database collected a total of 137,819 records of abundance data, mostly zooplankton and larval fish, at 6700 sampling sites in 475 cruises. Fig. 2.5 shows the taxonomic composition in bio-database with the number of records and proportions. The largest proportion larval fish data, mainly comes from Dr. Chiu’s research, sums up to a 61,165 records with 673 species, 500 genera, and 190 families (Table 2.4).
+
+
+## *Eco-environment database in ODB*
+
+This is a reference to table \@ref(tab:tab1).
+
+::: {custom-style="Table Caption"}
+Table `r run_bookmark("tab1", tab_zz)` Dataset demo
+:::
+
+
+```{r tab1, echo=FALSE, tab.id='tab1', label='tab1'}
+fread("./env_database202203.csv") %>% .[]
+```
+
+``` {r getenvGlossary, message=FALSE, warning=FALSE}
+odbapi::getEnv_glossary()
 ```

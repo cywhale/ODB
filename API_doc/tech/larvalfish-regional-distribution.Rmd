@@ -1,0 +1,785 @@
+
+
+## *Region Biodiversity of larval-fish bio-database *
+
+```{r link chiu_db, echo=TRUE, warning=FALSE, message=FALSE}
+library(odbapi)
+library(data.table)
+library(magrittr)
+library(ggplot2)
+
+#load(file="data/odb_env02.RData") #### 20170915 modified, for log(mean(xchl)) and use depth 05degree not eda1d
+
+fd0 <- getBio(dbhost = larvaHost, dbuser = odbUser, dbname = larvaDB, 
+              taxon_lvl = "All", varname = "metadata_raw", appends="all")
+site <- getBio(dbhost = larvaHost, dbuser = odbUser, dbname = larvaDB, 
+               taxon_lvl = "All", tblname = "cast_site")
+fd0z <- getBio(dbhost = odbHost, dbuser = odbUser, dbname = odbBioDB, 
+               taxon ="fish", taxon_lvl = "All", varname = "metadata_raw", value_unit = "perm3", appends = "all")
+sitez<- getBio(dbhost = odbHost, dbuser = odbUser, dbname = odbBioDB, 
+               taxon_lvl = "All", tblname = "cast_site", value_unit = "perm3")
+colx <- intersect(colnames(fd0), colnames(fd0z))
+fd1 <- list(fd0[,..colx], fd0z[,..colx]) %>% rbindlist(use.names = TRUE, fill = TRUE)
+
+```
+
+```{r gridded larval fish data overview, echo=TRUE, warning=FALSE, message=FALSE}
+fd1[, c("lng","lat") := grdxy_comb(longitude+0.25, latitude+0.25, 1L)] #gridded 0.5 degree
+fd05 <- fd1[mesh<=1000 & mesh>200 & latitude>=18 & 
+            rank %in% c("species","subspecies"),]
+
+fd05z <- fd05 %>%
+          .[,{.(val = mean(taxon_count*1000),
+                logv= log(mean(taxon_count*1000)), #logv is the log(1000 * taxonomic abundance)
+                spn = length(unique(taxonomic_name)), 
+                nsz = length(unique(cast_id))
+            )}, by = .(lng,lat, season, taxonomic_name)]
+
+fgrdx <- unique(fd05z[,.(lng,lat,season)]) %>% setorder(lng,lat,season) %>% .[,gxid:=.I]
+
+```
+
+```{r set regional group, echo=FALSE, warning=FALSE, message=FALSE}
+rg = data.frame(x1 = c(109, 109, 118, 121, 118,  121.5,120), #subdivide seas around Taiwan into 6 regions 
+                x2 = c(120.5,118,121, 135, 121.5,124,  135),
+                y1 = c(18,  21,   21,  18, 24,   24,   26.5), 
+                y2 = c(21,  22.5, 24,  24, 26.5, 26.5, 36))
+
+pts_in_grdx <- function(pt,grdx,tor=0) { #tor: tolerance in degree
+  x <- pt[[1]]
+  y <- pt[[2]]
+  grdt <- grdx %>% data.table()
+  grdt[,idx := fifelse(x<x2 & x>=x1 & y<y2 & y>=y1,1L,0L)]
+  if (length(which(grdt$idx==1L))>=1) {
+    return(which(grdt$idx==1L)[1])
+  } else {
+    grdt[,idx:=fifelse(((x-tor)<x2 & x>=x1 & y<y2 & y>=y1) |
+                        (x<x2 & (x+tor)>=x1 & y<y2 & y>=y1) |
+                        (x<x2 & x>=x1 & (y-tor)<y2 & y>=y1) |
+                        (x<x2 & x>=x1 & y<y2 & (y+tor)>=y1), 1L, 0L)]
+    if (length(which(grdt$idx==1L))>=1) {
+      return(which(grdt$idx==1L)[1])
+    } else {
+      return(0L)
+    }
+  }
+}
+
+grdx_in_grp <- function(grdx) {
+  x1 <- grdx[[1]]; x2 <- grdx[[2]]
+  y1 <- grdx[[3]]; y2 <- grdx[[4]]
+  stx<- grdx[[5]]; grp<- grdx[[6]]
+  xgrd <- 0.5*((x1*2):((x2+1)*2))
+  ygrd <- 0.5*((y1*2):((y2+1)*2))
+  data.table(CJ(xgrd[1:(length(xgrd)-1)],ygrd[1:(length(ygrd)-1)],seq(0,3)), stx=stx, grp=grp) %>% 
+    setnames(1:3, c("lng","lat","season"))
+}
+
+cast_in_grdx <- function (dt, rgt, tor=0.05) {
+  for(i in 1:nrow(rgt)) {
+    if (i==1) {
+      gp0 <- grdx_in_grp(rgt[i,])
+    } else {
+      gp0 <- rbind(gp0,grdx_in_grp(rgt[i,]))
+    }
+  }
+  gp0[,c("lng1","lat1"):=grdxy_comb(lng, lat, 2)] %>%
+    .[,`:=`(lng1x=lng1+0.5, lat1x=lat1+0.5)]
+  gpx <- copy(dt) %>% .[,stx:=apply(.[,.(longitude,latitude)],1,pts_in_grdx,grdx=rg, tor=tor)] 
+  gpx %<>% merge(rgt[,.(stx,grp)], by="stx", all.x=T)
+  gpx[is.na(grp), grp:=0L]
+  return(gpx)
+}
+
+rgt <- rg %>% setDT() %>% .[,`:=`(stx=.I, grp=rep(c(1,1:6),each=1))]
+rgx <- copy(rgt)
+rgx$grp<- factor(rgx$grp,levels=1:6, labels=paste0("grp",1:6))
+grpcolt <- scale_colour_manual(name="grp", 
+             values=c("0"="#F8766D", "1"="#7CAE00", "2"="#00BFC4", "3"="#C77CFF",
+                      "grp1"="forestgreen", "grp2"="cyan", "grp3"="gold",
+                      "grp4"="darkorchid1", "grp5"="chartreuse", "grp6"="darkorange",
+                      "TRUE"="blue", "FALSE"="red", "CHIU"="black", "ODB"="grey50"))
+```
+
+```{r to assign pts in groups, echo=TRUE, warning=FALSE, message=FALSE}
+frg1 <- cast_in_grdx(fd05, rgt, tor=0.05) #
+frg1[,stx:=ifelse(stx %in% c(1,2),1,stx-1L)] #%>% ######### combine grp1 and grp2 
+table(frg1$stx)
+```
+
+```{r iNext, echo=FALSE, warning=FALSE, message=FALSE}
+library(iNEXT)
+xassembly <- function(x, data,prex=4L, sitex=4L, 
+                      filter_en=FALSE, filter_col=NA_integer_, filter_min=NA_integer_) {
+  if (filter_en==TRUE & !is.na(filter_col) & !is.na(filter_min)) {
+    if (is.na(data[x, ..filter_col])) {
+      return(list())
+    }
+    if (as.integer(data[x, ..filter_col])<=filter_min) {
+      return(list())
+    }
+  }
+  a <- data[x,] %>% unlist(use.names = F) %>% .[-c(1:prex)] %>% .[.>0 & !is.na(.)] %>% na.omit()
+  if (filter_en==TRUE & is.na(filter_col) & !is.na(filter_min)) {  
+    if (length(a)<filter_min) {
+      return(list())
+    }
+  }
+  a <- list(a)
+  names(a)[1] <- as.character(data[x, ..sitex])
+  return(a)
+}
+
+fd1s <- data.table::dcast(fd05z, lng+lat+season ~ taxonomic_name, 
+                          function(x) {
+                            round(log(mean(x, na.rm=T)*10),0) 
+                          },value.var="val",fill=0) %>%
+  merge(unique(fd05z[,.(lng,lat)]) %>% .[,xgrp:=.I], by=c("lng","lat"), all.x=T) %>%
+  merge(unique(frg1[,.(lng,lat,grp)]), by=c("lng","lat"), all.x=T) %>%
+  .[,c(colnames(.)[1:3],"xgrp","grp",colnames(.)[4:(ncol(.)-2)]),with=F]
+```
+
+```{r iNext, echo=FALSE, warning=FALSE, message=FALSE}
+fix <- copy(fd1s)
+m <- c(1,8,32,128,256,512,1024) #2048
+
+for (i in 0:3) {   #season
+  for (j in 1:6) { #rgt
+    #cat("i,j: ",i,j,"\n")
+    if (nrow(fix[season==i & grp==j,])==0) {
+      #print("Nrow 0!!\n")
+      next
+    } else {
+      (tt <- lapply(1:nrow(fix[season==i & grp==j,]),xassembly,data=fix[season==i & grp==j,],prex=5L,filter_en=TRUE, filter_min=6L) %>% purrr::flatten())
+      assign(paste0("cx",i,j),tt)
+      assign(paste0("icx0",i,j),
+             iNEXT(tt, q=0, datatype="abundance",size=m))
+      assign(paste0("icx1",i,j),
+             iNEXT(tt, q=1, datatype="abundance",size=m))
+    }
+  }
+}
+
+```
+```{r plot iNEXT result, warning=FALSE, message=FALSE}
+library(ggrepel)
+
+for (i in 0:3) {   #season
+  for (j in 1:6) { #rgt
+    cat("i,j: ",i,j,"\n")
+    if (nrow(fix[season==i & grp==j,])==0) {
+      print("Nrow 0!!\n")
+      next
+    } else {
+      tt <- get(paste0("icx1",i,j))
+      df <- fortify(tt, type=1)
+      df.point <- df[which(df$method=="observed"),]  
+      df.line <- df[which(df$method!="observed"),]  
+      df.line$method <- factor(df.line$method,c("interpolated", "extrapolated"),  c("interpolation", "extrapolation"))  
+      assign(paste0("gx1",i,j),
+        ggplot(df, aes(x=x, y=y, colour=site)) +    
+          ylim(0,150) +xlim(0,515) + 
+          geom_point(aes(shape=site), size=5, data=df.point) +    
+          geom_line(aes(linetype=method), lwd=1.5, data=df.line) +  
+          geom_ribbon(aes(ymin=y.lwr, ymax=y.upr, 
+                        fill=site, colour=NULL), alpha=0.2) + 
+          geom_label_repel(data=df.line[which(paste0(df.line$method)=="extrapolation" & df.line$x==256),],
+                         aes(label = site), size=1.75,
+                         nudge_x = 1,
+                         na.rm = TRUE, segment.colour = NA) +
+          #labs(x="Number of individuals", y="Species diversity") +    
+          xlab(NULL) + ylab(NULL) + guides(linetype=FALSE, shape=FALSE, color=FALSE) +
+          theme(legend.position = "none", legend.title=element_blank())
+      )        
+    }
+  }
+}
+
+library(ggplot2)  
+library(gridExtra)  
+library(grid)  
+require(gtable)
+#source("~/R/01paper_ssn/code/NanhsiDT_miscfunc01.R")
+
+blankx <- grid.rect(gp=gpar(col="white"))
+
+#gt1 <- 
+#  ggplot_shared_axes(gx102,gx103,gx104,gx105,gx106, elements = c('yaxis'), 
+#                     byrow=T, plot=F,adj_ylab_pos = T) 
+#grid.arrange(blankx, gx102,gx103,gx104,gx105,gx106, ncol=6)
+
+lay1 <- rbind(c(1,2,3,4,5,6),
+              c(7,8,9,10,11,12),
+              c(13,14,15,16,17,18),
+              c(19,20,21,22,23,24))
+grid.arrange(gx101, gx102,gx103,gx104,gx105,gx106,
+             gx111, gx112,gx113,gx114,gx115,gx116,
+             gx121,gx122,gx123,gx124, gx125,gx126,
+             gx131,gx132,gx133,gx134,gx135, blankx,#gx136,
+             #ni.plot+theme(legend.position="none")+ annotate("text", x = annotfx1(range(c(nidf$x,nidf$cixh, nidf$cixl)),0.001),
+             #                                                 y = annotfx1(range(c(nidf$y,nidf$ciyh, nidf$ciyl)),0.999),
+             #                                                label = paste0("(e)"),fontface="bold", family = "sans"),
+             layout_matrix=lay1)
+
+```
+```{r make iNEXT result become diversity information to evaluate with env,echo=FALSE, warning=FALSE, message=FALSE}
+require(NanhsiDT)
+
+fcd1s <- data.table::dcast(fd1 %>%
+          .[,{.(logv=log(mean(taxon_count*1000)*10) #make log(x) x>1
+            )}, by=.(lng,lat, season, taxonomic_name)], lng+lat+season ~ taxonomic_name, mean, value.var="logv",fill=0, na.rm=T) %>%
+  .[,diver:=vsp_dividx(.[,4:ncol(.),with=F], index="shannon")] %>%
+  .[,spn:=vsp_dividx(.[,4:ncol(.),with=F], index="spnum")] %>%
+  .[,c("lng","lat","season","diver","spn",colnames(.)[4:(ncol(.)-2)]),with=F]
+
+fcd2s <- data.table::dcast(fd2 %>%
+          .[,{.(logv=log(mean(taxon_count*1000)*10) #make log(x) x>1
+            )}, by=.(lng,lat, season, taxonomic_name)], lng+lat+season ~ taxonomic_name, mean, value.var="logv",fill=0, na.rm=T) %>%
+  .[,diver:=vsp_dividx(.[,4:ncol(.),with=F], index="shannon")] %>%
+  .[,spn:=vsp_dividx(.[,4:ncol(.),with=F], index="spnum")] %>%
+  .[,c("lng","lat","season","diver","spn",colnames(.)[4:(ncol(.)-2)]),with=F]
+
+#fcd1s, note: fix had been changed to use fd2
+divf1 <- fcd2s[,1:5,with=F] %>% setnames(4:5,c("div_obs","spn_obs")) %>%
+         merge(unique(frg1[,.(lng,lat,grp)]), by=c("lng","lat"), all.x=T) %>% 
+         merge(unique(fix[,.(lng,lat,xgrp)]), by=c("lng","lat"), all.x=T)    
+
+esx <- data.table()
+for (i in 0:3) {   #season
+  for (j in 1:6) { #rgt
+    cat("i,j: ",i,j,"\n")
+    if (nrow(fix[season==i & grp==j,])==0) {
+      print("Nrow 0!!\n")
+      next
+    } else {
+      tt <- lapply(1:nrow(fix[season==i & grp==j,]),xassembly,
+                    data=fix[season==i & grp==j,],prex=5L,
+                    filter_en=TRUE, filter_min=6L) %>% purrr::flatten()
+
+      tt1<- estimateD(tt,datatype="abundance" , base="coverage",level= 0.95, conf=0.95) %>% ###==> esxb, eswb, new_divcx
+      #tt1 <- estimateD(tt,datatype="abundance" , base="size",level= 512, conf=0.95) %>%
+        merge(unique(divf1[,.(xgrp,grp)]) %>% setnames(1,"site"), by="site", all.x=TRUE) %>% setorder(grp,site)
+      if (nrow(esx)==0) {
+        esx <- cbind(tt1,season=i) 
+      } else {
+        esx <- rbind(esx, cbind(tt1,season=i))
+      }
+    }
+  }
+}
+
+```
+```{r Environmental factors,echo=TRUE, warning=FALSE, message=FALSE}
+#current_adcp01.R
+load("~/R/odbio_data/www/odb_env01.RData")
+load(file="data/odb_env02.RData") #### 20170915 modified, for log(mean(xchl)) and use depth 05degree not eda1d
+
+etat <- copy(sst) %>% #.[,seax:=ifelse(season %in% c(0,3),1,2)] %>% 
+  .[,{.(xsst=mean(sst,na.rm=T))},by=.(lng,lat,season)] #%>%
+esat <- copy(nss) %>% #.[,season:=datex_season(month)] %>%
+  #.[,seax:=ifelse(season %in% c(0,3),1,2)] %>% 
+  .[,{.(xsal=mean(ssal,na.rm=T))},by=.(lng,lat,season)] #%>% .[,season:=NULL]
+ecat <- copy(ssc) %>% #.[,seax:=ifelse(season %in% c(0,3),1,2)] %>% 
+  .[,{.(xchl=log(mean(chl,na.rm=T)))},by=.(lng,lat,season)] #%>% .[,season:=NULL]
+
+envt <- merge(etat,esat,c("lng","lat","season"), all=T) %>%
+  merge(ecat,c("lng","lat","season"), all=T)
+
+eda05d <- fread("/media/bioer/Data1/backup/Env/grid/g05d_depth.csv") %>% setnames(c(2:4),c("x","y","depth_mean")) %>%
+  .[,.(x,y,depth_mean)] %>% .[,depthm:=ifelse(is.na(depth_mean),NA,ifelse(depth_mean>=0,0, abs(depth_mean)))] %>%
+  .[,c("lngx","latx"):=grdxy_comb(x,y,1)] %>% #grid_combine.01a(x,y,0.5)] %>% 
+  .[,{.(depthm=mean(depthm,na.rm=T))},by=.(lngx,latx)] %>%
+  .[,depth:=ifelse(is.na(depthm),NA,log(depthm))] %>% setnames(1:2,c("lng","lat"))
+#.[,`:=`(lng=lngx+0.5, lat=latx+0.5)] %>%
+#.[,.(lng,lat,depth)]
+
+
+eda1d <- fread("/media/bioer/Data1/backup/Env/grid/g05d_depth.csv") %>% setnames(c(2:4),c("x","y","depth_mean")) %>%
+  .[,.(x,y,depth_mean)] %>% .[,depthm:=ifelse(is.na(depth_mean),NA,ifelse(depth_mean>=0,0, abs(depth_mean)))] %>%
+  .[,c("lngx","latx"):=grdxy_comb(x,y,2)] %>% #grid_combine.01a(x,y,0.5)] %>% 
+  .[,{.(depthm=mean(depthm,na.rm=T))},by=.(lngx,latx)] %>%
+  .[,depth:=ifelse(is.na(depthm),NA,log(depthm))] %>%
+  .[,`:=`(lng=lngx+0.5, lat=latx+0.5)] %>%
+  .[,.(lng,lat,depth)]
+
+env2dx <- #env05s[,{.(xsst=mean(xsst,na.rm=T),
+  #           xsal=mean(xsal,na.rm=T),
+  #           xchl=mean(xchl,na.rm=T)#,
+  #           #depth=mean(depth,na.rm=T)
+  #)}, by=.(lng1x, lat1x, season)] %>% setnames(1:2,c("lng","lat")) 
+  copy(nuts) %>% #.[,seax:=ifelse(season %in% c(0,3),1,2)] %>%
+  #.[,{.(no3=mean(no3,na.rm=T),po4=mean(po4,na.rm=T),sic=mean(sic,na.rm=T))}, by=.(lng,lat,seax)] %>%
+  .[,{.(no3=mean(no3,na.rm=T),po4=mean(po4,na.rm=T),sic=mean(sic,na.rm=T))}, by=.(lng,lat,season)] %>%
+  merge(eda1d,by=c("lng","lat"),all=T) 
+
+envt <- envt[,c("lng1","lat1"):=grdxy_comb(lng,lat,2)] %>%
+  .[,`:=`(lng1x=lng1+0.5, lat1x=lat1+0.5)] %>%
+  merge(copy(env2dx) %>% setnames(1:2,c("lng1x","lat1x")), by=c("lng1x","lat1x","season"), all.x=T) 
+
+env <- copy(env05s) #### try 
+######################## Note: rgt differ with zooplankton_version rgt, need re-run with previous code chunk about rgt!!!
+ev1 <- cast_in_grdx(copy(env) %>% setnames(1:2,c("longitude","latitude")), rgt) %>%
+  .[,stx:=NULL] %>% setnames(1:2,c("lng","lat"))
+
+ev2 <- cast_in_grdx(copy(envt) %>% setnames(4:5,c("longitude","latitude")), rgt) %>%
+  .[,stx:=NULL] %>% setnames(4:5,c("lng","lat"))
+
+ev2t<- ev2[grp %in% 1:6,]
+
+evx<- data.table::melt(ev1, id.vars=c("lng","lat","season","grp"),#measure = patterns("^x"), 
+                       measure.vars = colnames(ev1)[4:11],variable.name="envar")
+
+evt<- data.table::melt(ev2t,id.vars=c("lng","lat","season","grp"),#measure = patterns("^x"), 
+                       measure.vars = c("xsst","xsal","xchl",#"depth",
+                                        "no3","po4","sic"),variable.name="envar")
+
+evt[,resol:=ifelse(envar %in% c("xsst","xsal","xchl","depth"),"0.5 deg","1deg")]
+evt[,grp:=factor(grp)]
+evt[,season:=factor(season, levels = c(0,1,2,3), labels=c("Spring","Summer","Autumn","Winter"))]
+evt[,envar:=factor(envar, levels = c("xsst","xsal","xchl",#"depth",
+                                     "no3","po4","sic"),#,"oxy"), 
+                  labels=c("SST","Salinity","Chlorophyll",#"Depth", ## depth had no seasonality
+                           "Nitrate","Phosphate","Silicate"))]#,"Dissolved Oxygen"))]
+
+
+ggplot(aes(x=grp, y=value,fill=season), data=evt) + geom_boxplot() + 
+  facet_wrap(~envar,ncol=3,scales="free") + #ncol=4
+#  facet_grid(resol~season, scales="free",
+#             #yfacet~xfacet,
+#             labeller = labeller(
+#               #yfacet = c(`0` = "an y label", `1` = "another y label"),
+#               season = c(`0` = "Spring", `1` = "Summer",`2` = "Autumn", `3` = "Winter")
+#             )) 
+  theme(
+    panel.background = element_rect(fill="white"),
+    panel.border = element_rect(colour = "black", fill=NA, size=0.75),
+    panel.grid.major = element_blank(), 
+    panel.grid.minor = element_blank(),
+    strip.background = element_blank(),
+    strip.text.y = element_text(angle = 0),#,face = "italic"),
+    axis.text.x  = element_text(family = "sans", size = 8),
+    axis.title.x = element_blank(), #element_text(family = "sans", size=10),
+    axis.title.y = element_blank(), #element_text(family = "sans", size=10, margin(r=0),vjust=0.6), 
+    axis.text.y = element_text(family = "sans", size = 8), #element_blank(),
+    axis.line.x = element_blank(), #element_line(colour = "black"), 
+    #axis.ticks.y=element_blank(),
+    axis.line.y = element_blank(),#element_line(colour = "black"), 
+    legend.key = element_rect(fill = "transparent", colour = "transparent"),
+    legend.text = element_text(family = "sans"), 
+    legend.background = element_rect(fill = "transparent", colour = "transparent")#, #"white"),
+    #legend.position = c(0.15,0.45)
+  )
+
+env %<>% .[,hasna:=apply(.,1,function(x) {ifelse(any(which(is.na(x))),1,0)})]
+
+```
+
+```{r Diversity compared with observation,echo=TRUE, warning=FALSE, message=FALSE}
+############### just need run once ####################################################################
+esf <- esx %>% data.table() %>% setnames(1,"xgrp") %>% .[,xgrp:=as.integer(paste0(xgrp))] %>%
+  merge(fix[,1:4,with=F], by=c("xgrp","season"), all.x=T) %>%
+  .[,.(lng,lat,season,xgrp,m,method,order,qD)] %>% 
+  data.table::dcast(lng+lat+season+xgrp+m+method ~ order, function(x) {mean(x,na.rm=T)}, value.var="qD",fill=NA) %>%
+  setnames(7:9,c("spn_inxt","h1_inxt","h2_inxt")) %>%
+  .[,div_inxt:=log(h1_inxt)]
+
+divf1a <- merge(divf1,esf, by=c("lng","lat","season","xgrp"), all=T)
+
+cor.test(divf1a$spn_obs, divf1a$spn_inxt) #cor 0.9996489
+cor.test(divf1a$div_obs, divf1a$div_inxt) #cor 0.9992548
+
+divf1a[is.na(m) | (!is.na(m) & m<70),]
+nrow(divf1a[is.na(m) | (!is.na(m) & m<70),]) #92
+
+save(       icx001,icx002,icx003,icx004,icx005,icx006,icx011,icx012,icx013,icx014,icx015,icx016,
+            icx021,icx022,icx023,icx024,icx025,icx026,icx031,icx032,icx033,icx034,icx035,icx036,
+            icx101,icx102,icx103,icx104,icx105,icx106,icx111,icx112,icx113,icx114,icx115,icx116,
+            icx121,icx122,icx123,icx124,icx125,icx126,icx131,icx132,icx133,icx134,icx135,icx136,
+            cx01,cx02,cx03,cx04,cx05,cx06,cx11,cx12,cx13,cx14,cx15,cx16,
+            cx21,cx22,cx23,cx24,cx25,cx26,cx31,cx32,cx33,cx34,cx35,cx36,#cx1,esx,old_divcx,
+            #new_divcx,exwb,esxb,divcx,divcxa,zx1,zw2x,spsel,envt,envs,cast_tbl,cast_dt,
+            env, evt, ev1, ev2, fd1, fd2, divcx, divfx, divall,
+            esx,frg1,fd1s, divf1a, file="data/fish_regbio_iNEXT02grp01_with_odbio.RData")
+```
+
+```{r Check with zooplankton data}
+divfx <- merge(divf1a, env,by=c("lng","lat","season"), all.x=T)
+
+divfx %<>% merge(fd2 %>% #fd1
+                  .[,{.(logv=log(mean(taxon_count*1000)) #*10 make log(x) x>1
+                       )}, by=.(lng,lat, season)],
+           by=c("lng","lat","season"), all.x=T)
+
+
+###load(file="data/regbio_zooplankton02_krig02.RData") ############ then regbio02.R need not re-run
+#load(file="data/regbio_iNEXT01grp_newcx4.RData") ############ then regbio02.R need not re-run ## divcx needed 
+
+divall <- merge(divfx,
+                divcx[,.(lng,lat,season,div_inxt,spn_inxt, logv)] %>% setnames(4:6, c("div_cop","spn_cop", "abund_cop")),
+                by=c("lng","lat","season"), all=T)
+
+cor.test(divall$div_inxt,divall$div_cop) #marginal
+cor.test(divall$spn_inxt,divall$spn_cop) #p=0.02
+cor.test(divall$logv, divall$abund_cop) # not sig
+cor.test(divall$spn_inxt, divall$abund_cop) # no corr
+
+```
+
+```{r pair-wise correlation with environment,echo=TRUE, warning=FALSE, message=FALSE}
+
+my_fn1 <- function(data, mapping, ...){
+  p <- ggplot(data = data, mapping = mapping) + 
+    geom_point() + 
+    #geom_smooth(method=loess, fill="red", color="red", ...) +
+    geom_smooth(method=lm, fill="blue", color="blue", ...)
+  p
+}
+
+library(GGally) ## ggpairs combine with ggcorr
+### https://stackoverflow.com/questions/45873483/ggpairs-plot-with-heatmap-of-correlation-values
+#seasel<-0
+divfxb <- divall[,.(div_inxt,spn_inxt,logv,lat,lng,depth,xsst,xsal,xchl,no3,po4,sic, div_cop, spn_cop, abund_cop)] %>%
+#divcxb <- divcx[,.(div_inxt,spn_inxt,logv,lat,lng,depth,xsst,xsal,xchl,no3,po4,sic)] %>%
+#divcxb <- divcx[season %in% c(0,3),.(div_inxt,spn_inxt,logv,lat,lng,depth,xsst,xsal,xchl,no3,po4,sic)] %>%
+#divcxb <- divcx[season %in% c(1,2),.(div_inxt,spn_inxt,logv,lat,lng,depth,xsst,xsal,xchl,no3,po4,sic)] %>%
+  setnames(1:ncol(.),c("Diversity","Species","Abundance","Latitude","Longitude","Depth",
+           "SST","Salinity","Chlorophyll","Nitrate", "Phosphate", "Silicate","Cop_div","Cop_spn","Cop_abund"))
+p1 <- ggpairs(divfxb, columns = 1:ncol(divfxb), lower = list(continuous = my_fn1)) #list(continuous = "smooth"))  
+# Correlation matrix plot
+p2 <- ggcorr(divfxb, label = TRUE, label_round = 2, label_alpha = TRUE)
+
+# Get list of colors from the correlation matrix plot
+library(ggplot2)
+g2 <- ggplotGrob(p2)
+colors <- g2$grobs[[6]]$children[[3]]$gp$fill
+
+# Change background color to tiles in the upper triangular matrix of plots 
+idx <- 1
+p<- ncol(divfxb)
+for (k1 in 1:(p-1)) {
+  for (k2 in (k1+1):p) {
+    plt <- getPlot(p1,k1,k2) +
+      theme(panel.background = element_rect(fill = colors[idx], color="white"),
+            panel.grid.major = element_line(color=colors[idx]))
+    p1 <- putPlot(p1,plt,k1,k2)
+    idx <- idx+1
+  }
+}
+print(p1)
+
+```
+```{r current vector,echo=TRUE, warning=FALSE, message=FALSE}
+outerxy <- function(dt) {
+  x=sort(unique(dt$lng))
+  y=sort(unique(dt$lat))
+  ct <- CJ(x,y) %>% setnames(1:2,c("lng","lat")) %>%
+    merge(dt[,.(lng,lat,u,v)],by=c("lng","lat"),all.x=T)
+  
+  u = matrix(ct$u, nrow=length(x), ncol=length(y), byrow=T)
+  v = matrix(ct$v, nrow=length(x), ncol=length(y), byrow=T)
+  return(list(x=x,y=y,u=u,v=v,ct=ct))
+}
+
+#curt0 <- fread("data/adcp_grid15moa.txt")
+#setnames(curt0,c(1,2,3,4,6),c("lng","lat","depth","u","v"))
+#curt0 %<>% .[depth %in% c(20), .(lng,lat,u,v,time_period)] %>%
+#  .[,{.(u=mean(u,na.rm=T), v=mean(v,na.rm=T))}, by=.(lng,lat,time_period)] %>%
+#  unique() %>% setorder(lng,lat)
+###curt1 <- curt0[depth %in% c(20,30), .(lng,lat,depth,u,v,time_period)] %>%
+###  .[,{.(u=mean(u,na.rm=T), v=mean(v,na.rm=T))}, by=.(lng,lat)] %>%
+###  setorder(lng,lat)
+
+#ct <- outerxy(curt1)
+
+pac0 <- fread("data/scs_pacific.txt") %>%
+  setnames(c(1,2,3,4),c("lng","lat","u","v")) %>%
+  .[,{.(u=mean(u,na.rm=T), v=mean(v,na.rm=T))}, by=.(lng,lat,time_period)] %>%
+  unique() %>% setorder(lng,lat,time_period)
+
+######### use ADCP or SVP, if latter, mark # the following line
+#pac1 <- copy(pac0)
+#pac0 <- copy(curt0)
+library(OceanView)
+
+pt <- outerxy(pac0[time_period==0,]) ### no season
+pt0<- outerxy(pac0[time_period==14,]) ## spring
+pt1<- outerxy(pac0[time_period==15,]) ## summer
+pt2<- outerxy(pac0[time_period==16,]) ## autumn
+pt3<- outerxy(pac0[time_period==13,]) ## winter
+
+par(mfrow=c(2,2), cex=0.7)
+for (i in 1:4) {
+  tt <- get(paste0("pt",i-1))
+  sprtxt <- ifelse(i==1,"Spring",ifelse(i==2,"Summer",ifelse(i==3,"Autumn","Winter")))
+  quiver2D(u =tt$u, v = tt$v, x = tt$x, y = tt$y, colvar = tt$v > 0,
+           xlim=c(115,130),ylim=c(18,32),
+           col = c("red", "blue"), colkey = FALSE, arr.max = 0.3, arr.min = 0.1)
+  legend("topleft", bg = "transparent",
+         legend = paste(sprtxt))
+  abline(h=22)
+  abline(h=24)
+  abline(h=26)
+  abline(v=120)
+  abline(v=122)
+  abline(v=124)
+}
+
+#quiver2D(x = x, y = y, u = u, v = v, col = "grey",
+#         xlim=c(115,130),ylim=c(18,32))
+
+#flowpath(u = u, v = v, x = x, y = y, #numarr = 3,
+#         startx = 122.5, starty = 18, add=TRUE)
+OceanView::flowpath(u = pt$u, v = pt$v, x = pt$x, y = pt$y, #col = "red", numarr = 2,
+         startx = c(122.5,122.75),
+         starty = c(18,18), lwd = 2, col = "orange", add=TRUE)
+
+#ggplot(data=ct, aes(x=lng,y=lat)) +#, environment = environment()) +
+#  #geom_point(size = 1) +
+#  geom_segment(aes(xend=lng+0.5*u, yend=lat+0.5*v, color=factor(v>0)),
+#               arrow = arrow(length = unit(0.1, "cm"))) + #,
+#  #col=ifelse(ct$v>0,"blue","red")) +
+#  xlim(115,130) +
+#  ylim(18,32)
+
+############# rbind seasonal current data
+currx <- rbind(pt0$ct %>% .[,season:=0],pt1$ct %>% .[,season:=1]) %>%
+         rbind(pt2$ct %>% .[,season:=2]) %>% rbind(pt3$ct %>% .[,season:=3]) ### current from 198x - 2017
+
+```
+
+```{r plot Regional Abundance}
+nbin=20
+#scaf =0.5 ## for adcp
+scaf = 0.0075## for drifter
+
+divfxa <- copy(divfx) %>% .[,grp:= factor(grp,levels=1:6, labels=paste0("grp",1:6))]
+castft <- rbindlist(list(site[cast_id %in% fd1$cast_id,] %>% .[,data_src:="Chiu"], 
+                         sitez[cast_id %in% fd1z$cast_id,] %>% .[,date:=as.Date(date)] %>% .[,data_src:="Odbio"]))
+
+ggplot() +
+  coord_equal() +
+  # xlim(114,130) + ylim(18,32) +
+  xlim(113,130) + ylim(18,32.5) +
+  coord_fixed(ratio = 1)+
+  #geom_path(data = ne_coastline(scale = "large"), aes(x = long, y = lat, group = group),color = 'gray', size = .2)
+  geom_path(data = cmap, 
+            aes(x = long, y = lat, group = group),
+            color = 'gray', size = .2) +
+  geom_segment(data=currx, aes(x=lng, y=lat, xend=lng+scaf*u, yend=lat+scaf*v, color=factor(v>0)), alpha=0.4,
+               arrow = arrow(length = unit(0.1, "cm")), size=.2) +
+  facet_wrap(~season, ncol=2,
+             #yfacet~xfacet,
+             labeller = labeller(
+               #yfacet = c(`0` = "an y label", `1` = "another y label"),
+               season = c(`0` = "Spring", `1` = "Summer",`2` = "Autumn", `3` = "Winter")
+             )) +    
+
+  geom_point(data=divfxa, aes(x=lng+0.25, y=lat+0.25, #aes( 
+    size = logv, colour = grp), alpha=.5)+
+  #geom_text(aes(label=logv)) + 
+  scale_size(range = c(0.2,7.5)) +
+  
+  geom_point(data=castft,aes(x=longitude, y=latitude, color=data_src), #ifelse(data_src=="Chiu","black","grey")), 
+             size=.4)+ #, col="black") +
+  
+grpcolt  +
+  theme(
+    panel.background = element_rect(fill="white"),
+    panel.border = element_rect(colour = "black", fill=NA, size=0.75),
+    panel.grid.major = element_blank(), 
+    panel.grid.minor = element_blank(),
+    strip.background = element_blank(),
+    strip.text.y = element_text(angle = 0),#,face = "italic"),
+    axis.text.x  = element_text(family = "sans", size = 8),
+    axis.title.x = element_blank(), #element_text(family = "sans", size=10),
+    axis.title.y = element_blank(), #element_text(family = "sans", size=10, margin(r=0),vjust=0.6), 
+    axis.text.y = element_text(family = "sans", size = 8), #element_blank(),
+    axis.line.x = element_blank(), #element_line(colour = "black"), 
+    #axis.ticks.y=element_blank(),
+    axis.line.y = element_blank(),#element_line(colour = "black"), 
+    legend.key = element_rect(fill = "transparent", colour = "transparent"),
+    legend.text = element_text(family = "sans"), 
+    legend.background = element_rect(fill = "transparent", colour = "transparent")#, #"white"),
+    #legend.position = c(0.15,0.45)
+  )
+
+
+```
+```{r plot Regional Diversity}
+
+############################## diversity with bubble plot
+
+ggplot() +
+  coord_equal() +
+  # xlim(114,130) + ylim(18,32) +
+  xlim(113,130) + ylim(18,32.5) +
+  coord_fixed(ratio = 1)+
+  #geom_path(data = ne_coastline(scale = "large"), aes(x = long, y = lat, group = group),color = 'gray', size = .2)
+  geom_path(data = cmap, 
+            aes(x = long, y = lat, group = group),
+            color = 'gray', size = .2) +
+  geom_segment(data=currx, aes(x=lng, y=lat, xend=lng+scaf*u, yend=lat+scaf*v, color=factor(v>0)), alpha=0.4,
+               arrow = arrow(length = unit(0.1, "cm")), size=.2) +
+  
+  #data=divcxa, aes(x=lng+0.25, y=lat+0.25)) + 
+  facet_wrap(~season, ncol=2,
+             #yfacet~xfacet,
+             labeller = labeller(
+               #yfacet = c(`0` = "an y label", `1` = "another y label"),
+               season = c(`0` = "Spring", `1` = "Summer",`2` = "Autumn", `3` = "Winter")
+             )) +   
+  geom_point(data=divfxa, aes(x=lng+0.25, y=lat+0.25, #aes( 
+    size = div_inxt, colour = grp), alpha=.5)+
+  scale_size(range = c(0.2,7.5), trans="exp") +
+
+geom_point(data=castft,aes(x=longitude, y=latitude,  color=data_src),
+           size=.4) + #, col="black") +
+  
+grpcolt  +
+
+  theme(
+    panel.background = element_rect(fill="white"),
+    panel.border = element_rect(colour = "black", fill=NA, size=0.75),
+    panel.grid.major = element_blank(), 
+    panel.grid.minor = element_blank(),
+    strip.background = element_blank(),
+    strip.text.y = element_text(angle = 0),#,face = "italic"),
+    axis.text.x  = element_text(family = "sans", size = 8),
+    axis.title.x = element_blank(), #element_text(family = "sans", size=10),
+    axis.title.y = element_blank(), #element_text(family = "sans", size=10, margin(r=0),vjust=0.6), 
+    axis.text.y = element_text(family = "sans", size = 8), #element_blank(),
+    axis.line.x = element_blank(), #element_line(colour = "black"), 
+    #axis.ticks.y=element_blank(),
+    axis.line.y = element_blank(),#element_line(colour = "black"), 
+    legend.key = element_rect(fill = "transparent", colour = "transparent"),
+    legend.text = element_text(family = "sans"), 
+    legend.background = element_rect(fill = "transparent", colour = "transparent")#, #"white"),
+    #legend.position = c(0.15,0.45)
+  )
+
+
+```
+
+```{r Ranking dominance within seasonal and regional group}
+## The same code in current_adcp01.R
+toptenx <- function(x,dt,spcol="taxonomic_name",nget=10) {
+  tt <- match(spcol,colnames(dt))
+  tt1<- dt[,c(tt,x),with=F] %>% setnames(1:2,c("sp","val")) %>% setorder(-val,na.last=TRUE)
+  return(tt1[1:nget,]$sp)
+}
+
+topingrp <- function(x,dt,selx) {
+  tt <- dt[,x] %>% unlist(use.names=F) 
+  return(length(which(tt %in% selx))) 
+}
+
+mabundx <- function(x) {
+  x[is.na(x) | x<=0] <- 0.0
+  if (sum(x)==0) {return(0.0)}
+  mean(x,na.rm=T)
+}
+
+gpropx <- function(x) {
+  if(sum(x)==0) return(rep(0,length(x)))
+  tt <- x/sum(x,na.rm=T)
+  ot <- vector(mode = "character", length = length(tt))
+  ot[tt==0] <-"0"
+  ot[tt<0.01& tt>0] <- "."
+  ot[tt<0.05& tt>0.01] <- "+"
+  ot[tt<0.1 & tt>=0.05] <- "1"
+  ot[tt<0.2 & tt>=0.1]  <- "2"
+  ot[tt<0.3 & tt>=0.2]  <- "3"
+  ot[tt<0.4 & tt>=0.3]  <- "4"
+  ot[tt>=0.4] <- "D"
+  return(ot)
+}
+
+which_domin <- function(x, def_domin=c("D","4","3","2","1","+",".","0"), skipx=3L, not_found=0L) {
+  if (length(def_domin)==0 | is.na(skipx) | skipx>=length(def_domin)) {
+    return(NA_integer_)
+  }
+  sl <- length(def_domin) - skipx
+  for (i in 1:sl) {
+    tt <- which(x==def_domin[i])
+    if (any(tt)) {return(tt[1])}
+  }
+  return(not_found)
+}
+
+#fgrpx0<- unique(frg1[,.(season, stx)]) %>% setorder(stx,season)
+fgrpx <- CJ(1:6, 0:3) %>% setnames(1:2,c("stx","season")) %>% .[,grp:=.I]
+
+fx1 <- copy(frg1) %>% .[,grp:=NULL] %>% merge(fgrpx, by=c("stx","season"), all.x=T) %>%
+  merge(fgrdx, by=c("lng","lat","season"), all.x=T)
+table(fx1$grp)
+sort(table(fx1$grp), decreasing = T)
+# 9     2    12    21    3    16     4    23    22     1 ## too small samples should not be list
+# 655  383  307   222  147   128    96    94    78    33
+fw1 <- data.table::dcast(data=fx1, taxonomic_name~grp, value.var="taxon_count",fun.aggregate = mabundx)
+
+tt1 <- fx1 %>% .[,{.(occu=length(unique(gxid)))},by=.(taxonomic_name,grp)] %>% setorder(-occu) 
+tt2 <- fx1 %>% .[,{.(occu=length(unique(gxid)))},by=.(taxonomic_name)] %>% setorder(-occu) 
+fw2<- tt1 %>% data.table::dcast(taxonomic_name~grp, value.var="occu",fun.aggregate = sum) %>%
+  .[match(tt2$taxonomic_name,taxonomic_name),] %>% 
+  setorder(-`20`,-`19`,-`18`,-`17`,-`15`,-`14`,-`13`,-`11`,-`10`,-`8`,-`7`,-`6`,-`5`)
+
+fsel1 <- sapply(2:ncol(fw2), toptenx, dt=fw2, nget=10, simplify = T)
+fsel1x<- c(unlist(fsel1,use.names = F)) %>% unique()
+
+fsel2 <- sapply(3:ncol(fw1), toptenx, dt=fw1, simplify = T)
+fsel2x<- c(unlist(fsel2,use.names = F)) %>% unique()
+
+#check extra-dominance
+#fw1[,c("taxonomic_name","5"),with=F] %>% setorderv(c("5"),c(-1)) %>% .[1:50,]
+#fw1[,c("taxonomic_name","7"),with=F] %>% setorderv(c("7"),c(-1)) %>% .[1:50,]
+
+(fspsel<- unique(c(intersect(tt2$taxonomic_name[1:30],unique(c(fsel2x,fsel1x))),
+             c(unlist(fsel1[1:3,],use.names = F)),
+             c(unlist(fsel2[1:3,],use.names = F)),
+             c(intersect(tt2$taxonomic_name[1:50],unlist(fsel2[4:5,],use.names = F))) %>% unique())))
+
+# focus on abundance
+(tt <- unique(c(intersect(tt2$taxonomic_name[1:30],unique(c(fsel2x,fsel1x))),c(unlist(fsel2[1:7,],use.names = F)) %>% unique())))
+
+setdiff(fspsel, tt)
+
+(sapply(1:ncol(fsel1), topingrp, dt=fsel1, selx=fspsel, simplify = T))
+#[1]  8  7  9  9  9  9  9  6  8  8  7  7  5  9 10  8 10 10 10  9  9  8 10
+fsel1[,13][!fsel1[,13] %in% fspsel]
+fsel1[, 8][!fsel1[, 8] %in% fspsel]
+
+fw1x <- fw1[taxonomic_name %in% fspsel, ] %>%
+  setorder(-`5`,-`6`,-`7`,-`8`,-`10`,-`11`,-`13`,-`14`,-`15`,-`17`,-`18`,-`19`,-`20`, na.last=T)
+
+tt1 <- apply(fw1x[,3:ncol(fw1x),with=F],1,which.max)
+#colnames(fw1x)[3:ncol(fw1x)]
+# [1] "2"  "3"  "4"  "5"  "6"  "7"  "8"  "9"  "10" "11" "12" "13" "14" "15" "16" "17" "18" "19" "20"
+#[20] "21" "22" "23"
+# fgrpx #to see the digits in related to season and station 
+idxt<- c(which(tt1<=3), which(tt1<=7 & tt1>3), which(tt1<=11 & tt1>7), which(tt1<=15 & tt1>11),
+         which(tt1<=19 & tt1>15), which(tt1<=22 & tt1>19))
+
+fw1x %<>% .[idxt,]
+
+fw1t <- rbind(fw1x, fw1[!taxonomic_name %in% fspsel,]) %>%
+          .[,lapply(.SD,gpropx), .SDcols=3:ncol(.)] %>% .[1:nrow(fw1x),] 
+fw2x <- cbind(fw1x[,.(taxonomic_name)], fw1t) %>% .[1:nrow(fw1x),]
+
+tt1 <- apply(fw2x[,3:ncol(fw2x),with=F],1,which_domin)
+idxt<- c(which(tt1<=3), which(tt1<=7 & tt1>3), which(tt1<=11 & tt1>7), which(tt1<=15 & tt1>11),
+         which(tt1<=19 & tt1>15), which(tt1<=22 & tt1>19))
+
+fw2x %<>% .[c(idxt,setdiff(c(1:nrow(fw2x)),idxt)),]
+
+#taxa_pgc <- fread("~/R/odbio_data/www/taxa_cluster_pgc01.txt")
+#taxa_pgc[match(zw2x$pgc_code,taxa_pgc$PGC),]$focus_groups
+
+#zw2x %<>% .[,`:=`(family=taxagt[match(.$taxonomic_name,taxonomic_name),]$family,
+#                  class=taxa_pgc[match(.$pgc_code,PGC),]$focus_groups)] %>%
+#  .[,c(ncol(.),ncol(.)-1,2:(ncol(.)-2)),with=F]
+#zw2x[taxonomic_name=="Creseis virgula conica",taxonomic_name:="Creseis conica"]
+
+#fwrite(zw2x,file="data/regbio_major_splist03c.csv")
+#
+```
+

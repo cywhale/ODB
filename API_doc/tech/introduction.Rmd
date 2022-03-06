@@ -116,17 +116,7 @@ We present an infrastructure which may fulfill these requirements for constructi
 
 # OpenCPU framework for internal web APIs of bio-database
 
-## OpenCPU server configuration
-
-This is a reference to table \@ref(tab:tab1).
-
-::: {custom-style="Table Caption"}
-Table `r run_bookmark("tab1", tab_zz)` Dataset demo
-:::
+## *OpenCPU server configuration*
 
 
-```{r tab1, echo=FALSE, tab.id='tab1', label='tab1'}
-mtcars[1:5, 1:5]
-```
-
-## Internal API package: odbapi
+## *Internal API package: odbapi*
