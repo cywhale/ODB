@@ -22,6 +22,28 @@ colx <- intersect(colnames(fd0), colnames(fd0z))
 fd1 <- list(fd0[,..colx], fd0z[,..colx]) %>% rbindlist(use.names = TRUE, fill = TRUE)
 
 ```
+```{r rprotobuf, warning=FALSE, message=FALSE}
+#  curl https://bio.odb.ntu.edu.tw/ocpu/library/odbapi/R/getBio/json -H "Content-Type: application/json" -d "{\"dbuser\":\"odbguest\",\"dbhost\":\"192.168.2.24\",\"dbname\":\"odbio2\",\"value_unit\":\"perm3\"}" -o output02.json
+library(protolite)
+library(httr)
+arg1 = list(dbhost = odbHost, dbuser = odbUser, dbname = odbBioDB, 
+            taxon ='fish', taxon_lvl = 'species', value_unit = 'perm3', appends='all')
+f1 <- POST(
+    url = "https://bio.odb.ntu.edu.tw/ocpu/library/odbapi/R/getBio/pb",   
+    #body = toJSON(arg1),
+    #encode = "json",
+    #add_headers("Content-Type" = "application/json"),
+    #body = RProtoBuf::serialize_pb(arg1, NULL),
+    body = protolite::serialize_pb(arg1, NULL),
+    add_headers ("Content-Type" = "application/protobuf"),
+    verbose()
+  )  
+httr::stop_for_status(f1)
+#fdt1 <- jsonlite::fromJSON(content(f1, as="text")) %>% setDT()
+#fdt1 <- RProtoBuf::unserialize_pb(f1$content) %>% setDT()
+fdt1 <- protolite::unserialize_pb(f1$content)
+head(fdt1)
+```
 
 ```{r gridded larval fish data overview, echo=TRUE, warning=FALSE, message=FALSE}
 fd1[, c("lng","lat") := grdxy_comb(longitude+0.25, latitude+0.25, 1L)] #gridded 0.5 degree
