@@ -38,10 +38,11 @@ system.time(
   req <- POST(
     url = "https://bio.odb.ntu.edu.tw/ocpu/library/odbapi/R/sciname_simplify/pb",   
     body = RProtoBuf::serialize_pb(args, NULL),
-    add_headers ("Content-Type" = "application/protobuf")
+    add_headers ("Content-Type" = "application/protobuf"), #"application/x-protobuf"
+    verbose()
   )  
 )
-
+httr::stop_for_status(req)
 sp2 <- RProtoBuf::unserialize_pb(req$content)
 print(sp2)
 ```

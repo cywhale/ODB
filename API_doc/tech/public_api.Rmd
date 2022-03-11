@@ -1,0 +1,26 @@
+---
+output:
+  word_document: default
+  html_document: default
+---
+
+# **Public web APIs of bio-database: Open-API project**
+
+
+## *Open-API package: exapi*
+
+
+```{r function_geo2map, eval=FALSE, message=FALSE, warning=FALSE}
+exapi::geo2map(
+  geo = NULL, geopoly = NULL, file = NULL, format = "csv", type = "POLYGON",
+  crs = 4326, site = NULL, stfile = NA_character_, en_intersect = FALSE, 
+  env_layer = NA_character_, envsrc = NA_character_, by_season = TRUE, grd_env = 1L, 
+  env_fill_palette = "inferno", env_label = NA_character_, force_krig_off = FALSE, 
+  en_current = FALSE, bubble_datasrc = NULL, bubble_rng = c(0.5, 7.5), bubble_offset = 0, 
+  val_layer = NA_character_, val_group = NA_character_, val_label = val_layer, val_trans = "exp",
+  en_poly_border = TRUE, enlarge_poly_bbox = TRUE, scale_res = "medium", 
+  legend_pos = "topleft", color = NA_character_, debug_mode = FALSE)
+  
+```
+
+

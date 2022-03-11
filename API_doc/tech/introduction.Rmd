@@ -114,9 +114,10 @@ We present an infrastructure which may fulfill these requirements for constructi
 ```
 
 
-# OpenCPU framework for internal web APIs of bio-database
 
-## *OpenCPU server configuration*
+```{r, child=c('internal_api.Rmd')}
+```
 
 
-## *Internal API package: odbapi*
+```{r, child=c('public_api.Rmd')}
+```
