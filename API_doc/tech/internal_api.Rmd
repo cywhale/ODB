@@ -115,3 +115,14 @@ res <- microbenchmark::microbenchmark(
 
 ```
 
+```{r function_getBio, eval=FALSE, message=FALSE, warning=FALSE}
+odbapi::getBio( 
+  dbuser, dbhost, dbname,
+  tblname = NA, varname = NA, taxon = NA, taxon_lvl = "All", 
+  season_sel = NA, grd_sel = NA, grd_additive = 0L, 
+  lng_rng = NA, lat_rng = NA, date_rng = NA, depth_rng = NA, mesh_rng = NA, 
+  lifestages = NA, value_unit = NA, site = NA, appends = NA, parse_simple = TRUE
+)
+  
+```
+

@@ -197,7 +197,7 @@ Table `r run_bookmark("tab1", tab_zz)` Dataset demo
 
 
 ```{r tab1, echo=FALSE, tab.id='tab1', label='tab1'}
-fread("./env_database202203.csv") %>% .[]
+fread("data/env_database202203.csv") %>% .[]
 ```
 
 ``` {r getenvGlossary, message=FALSE, warning=FALSE}

@@ -24,6 +24,7 @@ node_modules
 **/tmp*.*
 **/.cache
 **/cache
+**/ocpu-rcache
 **/__pycache__
 **/dist
 **/dist_*
