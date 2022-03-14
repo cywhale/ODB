@@ -15,17 +15,16 @@ if (USE_SAVED) {
 
 
 ```{r gridded_larvalfish_data, results="hide", warning=FALSE, message=FALSE}
-
-fd0c <- getBio(dbhost = larvaHost, dbuser = odbUser, dbname = larvaDB,
-               mesh_rng = c(200, 1000), taxon ="fish", taxon_lvl = "species", 
-               varname = "metadata_raw", value_unit = "perm3", appends = "all")
-fd0z <- getBio(dbhost = odbHost, dbuser = odbUser, dbname = odbBioDB, 
-               mesh_rng = c(200, 1000), taxon ="fish", taxon_lvl = "species", 
-               varname = "metadata_raw", value_unit = "perm3", appends = "all")
+fd0c <- odbapi::getBio(dbhost = larvaHost, dbuser = odbUser, dbname = larvaDB,
+                       mesh_rng = c(200, 1000), taxon ="fish", taxon_lvl = "species", 
+                       varname = "metadata_raw", value_unit = "perm3", appends = "all")
+fd0z <- odbapi::getBio(dbhost = odbHost, dbuser = odbUser, dbname = odbBioDB, 
+                       mesh_rng = c(200, 1000), taxon ="fish", taxon_lvl = "species", 
+                       varname = "metadata_raw", value_unit = "perm3", appends = "all")
 colx <- intersect(colnames(fd0c), colnames(fd0z))
 fd1 <- list(fd0c[,..colx], fd0z[,..colx]) %>% rbindlist(use.names = TRUE, fill = TRUE)
-fd1[, c("lng","lat") := grdxy_comb(longitude+0.25, latitude+0.25, 1L)] #gridded 0.5 degree
-
+fd1[, c("lng","lat") := 
+        odbapi::grdxy_comb(longitude+0.25, latitude+0.25, 1L)] # 0.5-degree gridded
 ```
 
 
@@ -93,48 +92,46 @@ grpcolt <- scale_colour_manual(name="grp",
 
 ```{r pts_in_groups, results="hide", warning=FALSE, message=FALSE}
 if (!USE_SAVED) {
-  frg1 <- cast_in_grdx(fd1, rgt, tor=0.05) #
+  frg1 <- cast_in_grdx(fd1[,.(longitude, latitude, show_name, taxon_count, season, cast_id, lng, lat)], rgt, tor=0.05) #
+  frg1[,grp:=ifelse(stx <= 1, 1, ifelse(stx %in% c(2, 3), 2, stx-1L))] #%>% ######### combine grp1 and grp2 
+  setnames(frg1, ncol(frg1), "polyID")
+  #print(table(frg1$polyID))
+  #    1     2     3     4     5     6 
+  # 1169  4422  3782  9598 20783   297 
 }
-frg1[,stx:=ifelse(stx <= 1, 1, ifelse(stx %in% c(2, 3), 2, stx-1L))] #%>% ######### combine grp1 and grp2 
-frg1[grp==0 & stx==1, grp:=1]
-#print(table(frg1$stx))
+fgrdx <- unique(frg1[,.(lng,lat,season)]) %>% setorder(lng,lat,season) %>% .[,xid:=.I]
+#table(fgrdx$season)
 ```
 
 ```{r plot_region, eval=FALSE, results="hide", message=FALSE, warning=FALSE}
 if (!USE_SAVED) {
-  g1 <- exapi::bioquery(return_type = "site2map", datasrc=frg1, data_id="show_name", data_group="stx") #plot on map
+  g1 <- exapi::bioquery(return_type = "site2map", datasrc=frg1, data_group="polyID") #plot on map
 }
 
 ```
 
-```{r data_in_grid, results="hide", message=FALSE, warning=FALSE}
+```{r avg_abund_for_sp, results="hide", message=FALSE, warning=FALSE}
 fd05 <- frg1 %>%
-        .[,{.(val = mean(taxon_count*1000),
+        .[,{.(val = mean(taxon_count*1000), #mean aboundance for species, if sum-up it, will maximum dominance of some sp
               logv= log(mean(taxon_count*1000)), #logv is the log(1000 * taxonomic abundance)
-              spn = length(unique(taxonomic_name)), 
+              spn = length(unique(show_name)), 
               nsz = length(unique(cast_id))
-          )}, by = .(lng,lat, season, grp, taxonomic_name)]
-fgrdx <- unique(fd05[,.(lng,lat,season)]) %>% setorder(lng,lat,season) %>% .[,xgrp:=.I]
-#table(fgrdx$season)
-
+          )}, by = .(lng,lat, season, polyID, show_name)]
 ```
 
 ```{r bio_compo, results="hide", warning=FALSE, message=FALSE}
-fd2 <- data.table::dcast(fd05, lng+lat+season+grp ~ taxonomic_name, 
+fd2 <- data.table::dcast(fd05, lng+lat+season+polyID ~ show_name, 
                           function(x) {
                             round(log(mean(x, na.rm=T)*10),0) 
                           },value.var="val",fill=0) %>%
   merge(fgrdx, by=c("lng","lat","season"), all.x=T) %>%
-  .[,c(colnames(.)[1:3],"xgrp","grp",colnames(.)[5:(ncol(.)-1)]),with=F]
-
-fd2x <- copy(fd2) %>% setcolorder(c("grp", "lng", "lat", "season", "xgrp",
-                      setdiff(names(.), c("grp", "lng", "lat", "season", "xgrp")))) %>%
-  setnames(1:5, c("polyID", "longitude", "latitude", "season", "xid"))
+  .[, .SD, .SDcols=c("polyID",colnames(.)[1:3],"xid",colnames(.)[5:(ncol(.)-1)])] %>%
+  setnames(2:3, c("longitude", "latitude"))
 ```
 
 ``` {r exapi_bioquery, eval=FALSE, results="hide", message=FALSE, warning=FALSE}
 if (!USE_SAVED) {
-  g2 <- exapi:::compo_divx(data=fd2x, poly=1:6L, hasPoly=TRUE) #it works, but too slow to generate docx, so only run once to get plot
+  g2 <- exapi:::compo_divx(data=fd2, poly=1:6L, hasPoly=TRUE) #it works, but too slow to generate docx, so only run once to get plot
 }
 
 ```
@@ -142,7 +139,7 @@ if (!USE_SAVED) {
 
 ``` {r compo_stats, results="hide", message=FALSE, warning=FALSE}
 if (!USE_SAVED) {
-  fdiv <- exapi:::compo_divx(data = fd2x, poly = 1:6L, hasPoly=TRUE, return_type = "community_stats")
+  fdiv <- exapi:::compo_divx(data = fd2, poly = 1:6L, hasPoly=TRUE, return_type = "community_stats")
 }
 
 ```
@@ -157,9 +154,11 @@ head(fdiv)
 
 
 ``` {r merge_div, results="hide", warning=FALSE, message=FALSE}
-fcom <- merge(fd2[,1:5], frg1 %>% .[,{.(logv=log(mean(taxon_count*1000)))}, by=.(lng,lat, season, grp)],
-              by=c("lng", "lat", "season", "grp"), all.x=TRUE) %>% setnames(c(1,2,4), c("longitude", "latitude", "polyID")) %>%
-        merge(fdiv, by=c("longitude", "latitude", "season", "polyID"), all = TRUE)
+fcom <- merge(fd2[,1:5], 
+              frg1 %>% .[,{.(logv=log(mean(taxon_count*1000)))}, by=.(lng, lat, season, polyID)] %>% 
+                      setnames(1:2, c("longitude", "latitude")), 
+              by=c("longitude", "latitude", "season", "polyID"), all.x=TRUE) %>% 
+          merge(fdiv, by=c("longitude", "latitude", "season", "polyID"), all = TRUE)
   
 ```
 
