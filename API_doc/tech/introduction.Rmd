@@ -124,3 +124,7 @@ We present an infrastructure which may fulfill these requirements for constructi
 
 ```{r, child=c('public_api.Rmd')}
 ```
+
+
+```{r, child=c('bioquery.Rmd')}
+```

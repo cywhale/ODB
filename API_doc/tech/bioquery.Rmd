@@ -1,0 +1,119 @@
+---
+output:
+  word_document: default
+  html_document: default
+---
+
+# **A web application for the APIs of bio-database: Bio-Query**
+
+
+## *Bio-Query implemented on a R-Shiny web framework*
+
+
+```{r shiny_future, eval=FALSE, message=FALSE, warning=FALSE}
+# in server.R
+library(shiny)
+library(promises)
+library(odbapi)
+library(R.cache)
+
+setCacheRootPath(path="./.Rcache") 
+
+shinyServer(function(input, output, session) {
+  ggmapFx <- function(scale="medium") {
+    ggplot() + geom_sf(data = ne_coastline(scale = scale, returnclass = "sf"))
+  }
+
+  memFx <- function (FUN, akey=NULL, use_akey_only=FALSE, flatten_key=FALSE, ...) {
+    if (is.null(akey)) {
+      key <- list(...)
+    } else {
+      if (use_akey_only) {
+        key <- as.list(akey)
+      } else {
+        key <- list(akey,...)
+      }
+    }
+    if (flatten_key) key <- purrr::flatten(key)
+    fn <- as.character(substitute(FUN))
+    data <- R.cache::loadCache(key)
+    if (!is.null(data)) {
+      print(paste0("Loaded ", fn, " cached data"))
+      return(data)
+    }
+    print(paste0("Generating ", fn, " data from key: ", key))
+    data <- FUN(...)
+    R.cache::saveCache(data, key=key, comment=paste0(fn,"()"))
+    return(data)
+  }
+
+  gbasemap <- 
+    memFx(FUN=ggmapFx, akey=list(funx="ggmapFx"), use_akey_only=TRUE, scale="medium") + coord_sf()
+  
+  xst <- future(getBio(dbuser=def_user,dbhost=def_host,dbname=def_biodb,
+                       tblname='cast_site', appends = c('date','cite_ref')))
+  xsite <- memFx(FUN=future::value, akey=list(timestamp=Lastest_Modified_TimeStamp, funx="site_odb")
+
+  bioData <- reactiveValues(site = xsite, abundance = data.table(), mode="site")
+  bioAction <- reactiveValues(renew = FALSE, content = ggplot())
+  
+  bio_future <- reactive({
+    argx <- bio_paramx() # A reactive() value changed by UI actions observed in oberserveEvent({}) 
+    future(do.call(getBio, argx))
+  })
+  
+  lfish_future <- reactive({
+    argx <- lfish_paramx()
+    future(do.call(getBio, argx))
+  })
+  
+  bdt <- bio_future() %...>% (function(dt) {
+    if (error_handling(dt)) return(data.table())
+    return(dt)
+  })
+    
+  fdt <- lfish_future() %...>% (function(dt) {
+    if (error_handling(dt)) return(data.table())
+    return(dt)
+  })
+
+  observeEvent(input$specific_user_event, {
+    req(input$specific_user_event)
+    
+    promise_all(bdt, fdt) %...>% {
+      dt <- rbindlist(l=., fill=TRUE, use.names = TRUE)
+      bioData$taxadt<- xdt
+      bioData$mode <- "abundance"
+    }
+  })
+  
+  site_Plot <- reactive({
+    dt <- bioData$site
+    future({
+      gbasemap + geom_point(data=dt, aes(x=longitude, y=latitude, ...)) + ...
+    })  
+  })
+  
+  data_Plot <- reactive({
+    dt <- bioData$abundance
+    future({
+      gbasemap + geom_point(data=dt, aes(x=longitude, y=latitude, ...)) + ...
+    })  
+  })
+  
+  output$Canvas <- renderPlot({
+    if (bioData$mode == "abundance") {
+      g1 <- data_Plot()
+    } else {
+      g1 <- site_Plot()
+    }
+    g1 %...>% (function(gx) {
+        bioAction$content <- gx
+        bioAction$renew <- TRUE
+        bioAction$content
+      })
+  })
+})
+```
+
+
