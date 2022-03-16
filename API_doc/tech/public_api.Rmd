@@ -24,3 +24,10 @@ exapi::geo2map(
 ```
 
 
+```{r read_config, echo=FALSE, message=FALSE, warning=FALSE}
+cfg <- configr::read.config("data/query_config.json")
+jsonlite::toJSON(cfg, pretty = T)
+```
+``````{r import_config, eval=FALSE, message=FALSE, warning=FALSE}
+g1 <- exapi::bioquery(config = "data/query_config.json", return_type = "abundance_bubble", env_layer = "sst", envsrc = "nasa_neo", val_label = "Abundance")
+```

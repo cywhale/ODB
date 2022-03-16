@@ -117,10 +117,10 @@ We present an infrastructure which may fulfill these requirements for constructi
 ```{r, child=c('internal_api.Rmd')}
 ```
 
-
-```{r, child=c('larvalfish-regional-distribution.Rmd')}
-```
-
+#
+#```{r, child=c('larvalfish-regional-distribution.Rmd')}
+#```
+#
 
 ```{r, child=c('public_api.Rmd')}
 ```

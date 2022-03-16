@@ -50,8 +50,8 @@ shinyServer(function(input, output, session) {
   gbasemap <- 
     memFx(FUN=ggmapFx, akey=list(funx="ggmapFx"), use_akey_only=TRUE, scale="medium") + coord_sf()
   
-  xst <- future(getBio(dbuser=def_user,dbhost=def_host,dbname=def_biodb,
-                       tblname='cast_site', appends = c('date','cite_ref')))
+  xst <- future(getBio(dbuser = odbUser,dbhost = odbHost, dbname = odbBioDB,
+                       tblname = 'cast_site', appends = c('date','cite_ref')))
   xsite <- memFx(FUN=future::value, akey=list(timestamp=Lastest_Modified_TimeStamp, funx="site_odb")
 
   bioData <- reactiveValues(site = xsite, abundance = data.table(), mode="site")
