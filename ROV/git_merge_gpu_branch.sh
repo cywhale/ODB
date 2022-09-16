@@ -45,5 +45,14 @@ ARG PHP_VERSION=1:8.0.22-1+ubuntu20.04.1+deb.sury.org+1
 cd build && sudo ./build.sh
 #Problem about docker-compose.yaml and ./artisan migrate
 # https://github.com/biigle/core/discussions/482
+# version is deprecated. So need to upgrade docker-compose to solve docker-compose.yaml unsupported config option conflict.
+sudo apt install docker-compose-plugin
+# and /usr/local/bin/docker-compose still old version (Go to https://github.com/docker/compose/releases find the newest version)
+wget https://github.com/docker/compose/releases/download/v2.11.0/docker-compose-linux-x86_64
+sudo cp ./docker-compose-linux-x86_64 /usr/local/bin/docker-compose
+
+
+
+
 
 
