@@ -5,11 +5,13 @@ FROM tensorflow/tensorflow:2.6.1-gpu
 
 #Problem 2
 #successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+#### Update: cannot apply this, cause NVIDIA-SMI has failed because it couldn't communicate with the NVIDIA driver. ########
 #https://stackoverflow.com/questions/44232898/memoryerror-in-tensorflow-and-successful-numa-node-read-from-sysfs-had-negativ
 # 1) Identify the PCI-ID (with domain) of your GPU
 #    For example: PCI_ID="0000.81:00.0"
-lspci -D | grep NVIDIA #0000:02:01.0
+# lspci -D | grep NVIDIA #0000:02:01.0
 # 2) Add a crontab for root
-sudo crontab -e
+# sudo crontab -e
 #    Add the following line
-@reboot (echo 0 | tee -a "/sys/bus/pci/devices/0000:02:01.0/numa_node")
+# @reboot (echo 0 | tee -a "/sys/bus/pci/devices/0000:02:01.0/numa_node")
+######################################################################### Fail trial
