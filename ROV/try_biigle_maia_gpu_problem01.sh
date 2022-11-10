@@ -1,3 +1,6 @@
+#Kill maia job
+curl --insecure -I -X DELETE -u SU@email:TOKEN -H "Accept: application/json" https://localhost:8008/api/v1/maia-jobs/:id
+
 #Problem 1
 #DetectionRunner.py: RuntimeError: module compiled against API version 0x10 but this version of numpy is 0xe
 #modify FROM tensorflow/tensorflow:latest-gpu (there is no tensorflow:2.5.3-gpu for current MAIA used)
