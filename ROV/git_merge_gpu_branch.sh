@@ -51,8 +51,21 @@ sudo apt install docker-compose-plugin
 wget https://github.com/docker/compose/releases/download/v2.11.0/docker-compose-linux-x86_64
 sudo cp ./docker-compose-linux-x86_64 /usr/local/bin/docker-compose
 
+##nvida setup
+# https://biigle-admin-documentation.readthedocs.io/appendix/gpu-setup/
+# https://www.tensorflow.org/install/gpu#ubuntu_1804_cuda_10 (if update nvidia, runtime libraries may need reinstall? to active gpu-worker
+# keep nvida version
+apt-mark hold nvidia-driver-*
 
+#alternative method
+vim /etc/apt/apt.conf.d/20auto-upgrades
+#modify
+# APT::Periodic::Update-Package-Lists "0";
+# APT::Periodic::Download-Upgradeable-Packages "0";
+# APT::Periodic::AutocleanInterval "0";
+# APT::Periodic::Unattended-Upgrade "1";
 
-
+## nvidia-smi
+watch -n 1 nvidia-smi #update every 1sec
 
 
