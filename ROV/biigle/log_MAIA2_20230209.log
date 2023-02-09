@@ -1,0 +1,2414 @@
+[2023-02-09 18:00:37] production.ERROR: Error while executing python command '/var/www/vendor/biigle/maia/src/config/../resources/scripts/object-detection/TrainingRunner.py /var/www/storage/maia_jobs/maia-41-object-detection/input-training.json /var/www/storage/maia_jobs/maia-41-object-detection/output-dataset.json':
+/opt/conda/lib/python3.10/site-packages/mmcv/__init__.py:20: UserWarning: On January 1, 2023, MMCV will release v2.0.0, in which it will remove components related to the training process and add a data transformation module. In addition, it will rename the package names mmcv to mmcv-lite and mmcv-full to mmcv. See https://github.com/open-mmlab/mmcv/blob/master/docs/en/compatibility.md for more details.
+  warnings.warn(
+Matplotlib created a temporary config/cache directory at /tmp/matplotlib-3rw797a2 because the default path (/.config/matplotlib) is not a writable directory; it is highly recommended to set the MPLCONFIGDIR environment variable to a writable directory, in particular to speed up the import of Matplotlib and to better support multiprocessing.
+/opt/conda/lib/python3.10/site-packages/mmdet/utils/setup_env.py:38: UserWarning: Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed.
+  warnings.warn(
+/opt/conda/lib/python3.10/site-packages/mmdet/utils/setup_env.py:48: UserWarning: Setting MKL_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed.
+  warnings.warn(
+/bin/sh: 1: gcc: not found
+2023-02-09 18:00:22,490 - mmdet - INFO - Environment info:
+------------------------------------------------------------
+sys.platform: linux
+Python: 3.10.8 (main, Nov  4 2022, 13:48:29) [GCC 11.2.0]
+CUDA available: True
+GPU 0: NVIDIA A16-8Q
+CUDA_HOME: /opt/conda
+NVCC: Cuda compilation tools, release 11.6, V11.6.124
+GCC: n/a
+PyTorch: 1.13.1
+PyTorch compiling details: PyTorch built with:
+  - GCC 9.3
+  - C++ Version: 201402
+  - Intel(R) oneAPI Math Kernel Library Version 2021.4-Product Build 20210904 for Intel(R) 64 architecture applications
+  - Intel(R) MKL-DNN v2.6.0 (Git Hash 52b5f107dd9cf10910aaa19cb47f3abf9b349815)
+  - OpenMP 201511 (a.k.a. OpenMP 4.5)
+  - LAPACK is enabled (usually provided by MKL)
+  - NNPACK is enabled
+  - CPU capability usage: AVX2
+  - CUDA Runtime 11.6
+  - NVCC architecture flags: -gencode;arch=compute_37,code=sm_37;-gencode;arch=compute_50,code=sm_50;-gencode;arch=compute_60,code=sm_60;-gencode;arch=compute_61,code=sm_61;-gencode;arch=compute_70,code=sm_70;-gencode;arch=compute_75,code=sm_75;-gencode;arch=compute_80,code=sm_80;-gencode;arch=compute_86,code=sm_86;-gencode;arch=compute_37,code=compute_37
+  - CuDNN 8.3.2  (built against CUDA 11.5)
+  - Magma 2.6.1
+  - Build settings: BLAS_INFO=mkl, BUILD_TYPE=Release, CUDA_VERSION=11.6, CUDNN_VERSION=8.3.2, CXX_COMPILER=/opt/rh/devtoolset-9/root/usr/bin/c++, CXX_FLAGS= -fabi-version=11 -Wno-deprecated -fvisibility-inlines-hidden -DUSE_PTHREADPOOL -fopenmp -DNDEBUG -DUSE_KINETO -DUSE_FBGEMM -DUSE_QNNPACK -DUSE_PYTORCH_QNNPACK -DUSE_XNNPACK -DSYMBOLICATE_MOBILE_DEBUG_HANDLE -DEDGE_PROFILER_USE_KINETO -O2 -fPIC -Wno-narrowing -Wall -Wextra -Werror=return-type -Werror=non-virtual-dtor -Wno-missing-field-initializers -Wno-type-limits -Wno-array-bounds -Wno-unknown-pragmas -Wunused-local-typedefs -Wno-unused-parameter -Wno-unused-function -Wno-unused-result -Wno-strict-overflow -Wno-strict-aliasing -Wno-error=deprecated-declarations -Wno-stringop-overflow -Wno-psabi -Wno-error=pedantic -Wno-error=redundant-decls -Wno-error=old-style-cast -fdiagnostics-color=always -faligned-new -Wno-unused-but-set-variable -Wno-maybe-uninitialized -fno-math-errno -fno-trapping-math -Werror=format -Werror=cast-function-type -Wno-stringop-overflow, LAPACK_INFO=mkl, PERF_WITH_AVX=1, PERF_WITH_AVX2=1, PERF_WITH_AVX512=1, TORCH_VERSION=1.13.1, USE_CUDA=ON, USE_CUDNN=ON, USE_EXCEPTION_PTR=1, USE_GFLAGS=OFF, USE_GLOG=OFF, USE_MKL=ON, USE_MKLDNN=ON, USE_MPI=OFF, USE_NCCL=ON, USE_NNPACK=ON, USE_OPENMP=ON, USE_ROCM=OFF, 
+
+TorchVision: 0.14.1
+OpenCV: 4.7.0
+MMCV: 1.7.1
+MMCV Compiler: GCC 9.3
+MMCV CUDA Compiler: 11.6
+MMDetection: 2.28.1+unknown
+------------------------------------------------------------
+
+2023-02-09 18:00:23,368 - mmdet - INFO - Config:
+classes = ['interesting']
+model = dict(
+    type='FasterRCNN',
+    backbone=dict(
+        type='ResNet',
+        depth=50,
+        num_stages=4,
+        out_indices=(0, 1, 2, 3),
+        frozen_stages=1,
+        norm_cfg=dict(type='BN', requires_grad=True),
+        norm_eval=True,
+        style='pytorch',
+        init_cfg=dict(
+            type='Pretrained',
+            checkpoint='/var/www/storage/maia_jobs/resnet50-11ad3fa6.pth')),
+    neck=dict(
+        type='FPN',
+        in_channels=[256, 512, 1024, 2048],
+        out_channels=256,
+        num_outs=5),
+    rpn_head=dict(
+        type='RPNHead',
+        in_channels=256,
+        feat_channels=256,
+        anchor_generator=dict(
+            type='AnchorGenerator',
+            scales=[8],
+            ratios=[0.5, 1.0, 2.0],
+            strides=[4, 8, 16, 32, 64]),
+        bbox_coder=dict(
+            type='DeltaXYWHBBoxCoder',
+            target_means=[0.0, 0.0, 0.0, 0.0],
+            target_stds=[1.0, 1.0, 1.0, 1.0]),
+        loss_cls=dict(
+            type='CrossEntropyLoss', use_sigmoid=True, loss_weight=1.0),
+        loss_bbox=dict(type='L1Loss', loss_weight=1.0)),
+    roi_head=dict(
+        type='StandardRoIHead',
+        bbox_roi_extractor=dict(
+            type='SingleRoIExtractor',
+            roi_layer=dict(type='RoIAlign', output_size=7, sampling_ratio=0),
+            out_channels=256,
+            featmap_strides=[4, 8, 16, 32]),
+        bbox_head=dict(
+            type='Shared2FCBBoxHead',
+            in_channels=256,
+            fc_out_channels=1024,
+            roi_feat_size=7,
+            num_classes=1,
+            bbox_coder=dict(
+                type='DeltaXYWHBBoxCoder',
+                target_means=[0.0, 0.0, 0.0, 0.0],
+                target_stds=[0.1, 0.1, 0.2, 0.2]),
+            reg_class_agnostic=False,
+            loss_cls=dict(
+                type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0),
+            loss_bbox=dict(type='L1Loss', loss_weight=1.0))),
+    train_cfg=dict(
+        rpn=dict(
+            assigner=dict(
+                type='MaxIoUAssigner',
+                pos_iou_thr=0.7,
+                neg_iou_thr=0.3,
+                min_pos_iou=0.3,
+                match_low_quality=True,
+                ignore_iof_thr=-1),
+            sampler=dict(
+                type='RandomSampler',
+                num=256,
+                pos_fraction=0.5,
+                neg_pos_ub=-1,
+                add_gt_as_proposals=False),
+            allowed_border=-1,
+            pos_weight=-1,
+            debug=False),
+        rpn_proposal=dict(
+            nms_pre=2000,
+            max_per_img=1000,
+            nms=dict(type='nms', iou_threshold=0.7),
+            min_bbox_size=0),
+        rcnn=dict(
+            assigner=dict(
+                type='MaxIoUAssigner',
+                pos_iou_thr=0.5,
+                neg_iou_thr=0.5,
+                min_pos_iou=0.5,
+                match_low_quality=False,
+                ignore_iof_thr=-1),
+            sampler=dict(
+                type='RandomSampler',
+                num=512,
+                pos_fraction=0.25,
+                neg_pos_ub=-1,
+                add_gt_as_proposals=True),
+            pos_weight=-1,
+            debug=False)),
+    test_cfg=dict(
+        rpn=dict(
+            nms_pre=1000,
+            max_per_img=1000,
+            nms=dict(type='nms', iou_threshold=0.7),
+            min_bbox_size=0),
+        rcnn=dict(
+            score_thr=0.05,
+            nms=dict(type='nms', iou_threshold=0.5),
+            max_per_img=100)))
+dataset_type = 'CustomDataset'
+img_norm_cfg = dict(
+    mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
+train_pipeline = [
+    dict(type='LoadImageFromFile', color_type='unchanged'),
+    dict(type='LoadAnnotations', with_bbox=True),
+    dict(type='RandomCrop', crop_size=(512, 512)),
+    dict(
+        type='Albu',
+        skip_img_without_anno=True,
+        bbox_params=dict(
+            type='BboxParams',
+            format='pascal_voc',
+            label_fields=['gt_labels'],
+            filter_lost_elements=True,
+            min_area=100),
+        keymap=dict(img='image', gt_masks='masks', gt_bboxes='bboxes'),
+        transforms=[
+            dict(
+                type='SomeOf',
+                n=4,
+                p=0.25,
+                replace=False,
+                transforms=[
+                    dict(type='Flip'),
+                    dict(type='RandomRotate90'),
+                    dict(type='GaussianBlur', sigma_limit=[1.0, 2.0]),
+                    dict(
+                        type='ImageCompression',
+                        quality_lower=25,
+                        quality_upper=50)
+                ])
+        ]),
+    dict(
+        type='Normalize',
+        mean=[123.675, 116.28, 103.53],
+        std=[58.395, 57.12, 57.375],
+        to_rgb=True),
+    dict(type='Pad', size_divisor=32),
+    dict(type='DefaultFormatBundle'),
+    dict(
+        type='Collect',
+        keys=['img', 'gt_bboxes', 'gt_labels'],
+        meta_keys=[
+            'filename', 'ori_filename', 'ori_shape', 'img_shape', 'pad_shape',
+            'scale_factor', 'img_norm_cfg'
+        ])
+]
+test_pipeline = [
+    dict(type='LoadImageFromFile', color_type='unchanged'),
+    dict(
+        type='MultiScaleFlipAug',
+        scale_factor=1,
+        flip=False,
+        transforms=[
+            dict(
+                type='Normalize',
+                mean=[123.675, 116.28, 103.53],
+                std=[58.395, 57.12, 57.375],
+                to_rgb=True),
+            dict(type='Pad', size_divisor=32),
+            dict(type='ImageToTensor', keys=['img']),
+            dict(type='Collect', keys=['img'])
+        ])
+]
+data = dict(
+    samples_per_gpu=16,
+    workers_per_gpu=10,
+    train=dict(
+        type='CustomDataset',
+        ann_file=
+        '/var/www/storage/maia_jobs/maia-41-object-detection/train_dataset.pkl',
+        img_prefix=
+        '/var/www/storage/maia_jobs/maia-41-object-detection/training_images',
+        pipeline=[
+            dict(type='LoadImageFromFile', color_type='unchanged'),
+            dict(type='LoadAnnotations', with_bbox=True),
+            dict(type='RandomCrop', crop_size=(512, 512)),
+            dict(
+                type='Albu',
+                skip_img_without_anno=True,
+                bbox_params=dict(
+                    type='BboxParams',
+                    format='pascal_voc',
+                    label_fields=['gt_labels'],
+                    filter_lost_elements=True,
+                    min_area=100),
+                keymap=dict(img='image', gt_masks='masks', gt_bboxes='bboxes'),
+                transforms=[
+                    dict(
+                        type='SomeOf',
+                        n=4,
+                        p=0.25,
+                        replace=False,
+                        transforms=[
+                            dict(type='Flip'),
+                            dict(type='RandomRotate90'),
+                            dict(type='GaussianBlur', sigma_limit=[1.0, 2.0]),
+                            dict(
+                                type='ImageCompression',
+                                quality_lower=25,
+                                quality_upper=50)
+                        ])
+                ]),
+            dict(
+                type='Normalize',
+                mean=[123.675, 116.28, 103.53],
+                std=[58.395, 57.12, 57.375],
+                to_rgb=True),
+            dict(type='Pad', size_divisor=32),
+            dict(type='DefaultFormatBundle'),
+            dict(
+                type='Collect',
+                keys=['img', 'gt_bboxes', 'gt_labels'],
+                meta_keys=[
+                    'filename', 'ori_filename', 'ori_shape', 'img_shape',
+                    'pad_shape', 'scale_factor', 'img_norm_cfg'
+                ])
+        ],
+        classes=('interesting', )),
+    val=dict(
+        type='CustomDataset',
+        ann_file='',
+        img_prefix='',
+        pipeline=[
+            dict(type='LoadImageFromFile', color_type='unchanged'),
+            dict(
+                type='MultiScaleFlipAug',
+                scale_factor=1,
+                flip=False,
+                transforms=[
+                    dict(
+                        type='Normalize',
+                        mean=[123.675, 116.28, 103.53],
+                        std=[58.395, 57.12, 57.375],
+                        to_rgb=True),
+                    dict(type='Pad', size_divisor=32),
+                    dict(type='ImageToTensor', keys=['img']),
+                    dict(type='Collect', keys=['img'])
+                ])
+        ],
+        classes=('interesting', )),
+    test=dict(
+        type='CustomDataset',
+        ann_file='',
+        img_prefix='',
+        pipeline=[
+            dict(type='LoadImageFromFile', color_type='unchanged'),
+            dict(
+                type='MultiScaleFlipAug',
+                scale_factor=1,
+                flip=False,
+                transforms=[
+                    dict(
+                        type='Normalize',
+                        mean=[123.675, 116.28, 103.53],
+                        std=[58.395, 57.12, 57.375],
+                        to_rgb=True),
+                    dict(type='Pad', size_divisor=32),
+                    dict(type='ImageToTensor', keys=['img']),
+                    dict(type='Collect', keys=['img'])
+                ])
+        ],
+        classes=('interesting', )))
+evaluation = dict(interval=1, metric=['mAP'])
+optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
+optimizer_config = dict(grad_clip=None)
+lr_config = dict(
+    policy='step',
+    warmup='linear',
+    warmup_iters=500,
+    warmup_ratio=0.001,
+    step=[8, 11])
+epochs = 12
+runner = dict(type='EpochBasedRunner', max_epochs=12)
+checkpoint_config = dict(interval=12)
+log_config = dict(interval=1, hooks=[dict(type='TextLoggerHook')])
+custom_hooks = [dict(type='NumClassCheckHook')]
+dist_params = dict(backend='nccl')
+log_level = 'INFO'
+load_from = '/var/www/storage/maia_jobs/faster_rcnn_r50_fpn_1x_coco_20200130-047c8118.pth'
+resume_from = None
+workflow = [('train', 1)]
+opencv_num_threads = 0
+mp_start_method = 'fork'
+auto_scale_lr = dict(enable=True, base_batch_size=16)
+work_dir = '/var/www/storage/maia_jobs/maia-41-object-detection/work_dir'
+auto_resume = False
+gpu_ids = [0]
+
+2023-02-09 18:00:23,369 - mmdet - INFO - Set random seed to 1965117128, deterministic: False
+2023-02-09 18:00:23,881 - mmcv - INFO - initialize ResNet with init_cfg {'type': 'Pretrained', 'checkpoint': '/var/www/storage/maia_jobs/resnet50-11ad3fa6.pth'}
+2023-02-09 18:00:23,882 - mmcv - INFO - load model from: /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth
+2023-02-09 18:00:23,883 - mmcv - INFO - load checkpoint from local path: /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth
+2023-02-09 18:00:23,977 - mmcv - WARNING - The model and loaded state dict do not match exactly
+
+unexpected key in source state_dict: fc.weight, fc.bias
+
+2023-02-09 18:00:23,998 - mmcv - INFO - initialize FPN with init_cfg {'type': 'Xavier', 'layer': 'Conv2d', 'distribution': 'uniform'}
+2023-02-09 18:00:24,030 - mmcv - INFO - initialize RPNHead with init_cfg {'type': 'Normal', 'layer': 'Conv2d', 'std': 0.01}
+2023-02-09 18:00:24,035 - mmcv - INFO - initialize Shared2FCBBoxHead with init_cfg [{'type': 'Normal', 'std': 0.01, 'override': {'name': 'fc_cls'}}, {'type': 'Normal', 'std': 0.001, 'override': {'name': 'fc_reg'}}, {'type': 'Xavier', 'distribution': 'uniform', 'override': [{'name': 'shared_fcs'}, {'name': 'cls_fcs'}, {'name': 'reg_fcs'}]}]
+2023-02-09 18:00:24,158 - mmcv - INFO - 
+backbone.conv1.weight - torch.Size([64, 3, 7, 7]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,158 - mmcv - INFO - 
+backbone.bn1.weight - torch.Size([64]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,158 - mmcv - INFO - 
+backbone.bn1.bias - torch.Size([64]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,158 - mmcv - INFO - 
+backbone.layer1.0.conv1.weight - torch.Size([64, 64, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,158 - mmcv - INFO - 
+backbone.layer1.0.bn1.weight - torch.Size([64]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,158 - mmcv - INFO - 
+backbone.layer1.0.bn1.bias - torch.Size([64]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,158 - mmcv - INFO - 
+backbone.layer1.0.conv2.weight - torch.Size([64, 64, 3, 3]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,158 - mmcv - INFO - 
+backbone.layer1.0.bn2.weight - torch.Size([64]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,158 - mmcv - INFO - 
+backbone.layer1.0.bn2.bias - torch.Size([64]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,158 - mmcv - INFO - 
+backbone.layer1.0.conv3.weight - torch.Size([256, 64, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,158 - mmcv - INFO - 
+backbone.layer1.0.bn3.weight - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,158 - mmcv - INFO - 
+backbone.layer1.0.bn3.bias - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,158 - mmcv - INFO - 
+backbone.layer1.0.downsample.0.weight - torch.Size([256, 64, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,158 - mmcv - INFO - 
+backbone.layer1.0.downsample.1.weight - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,158 - mmcv - INFO - 
+backbone.layer1.0.downsample.1.bias - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,158 - mmcv - INFO - 
+backbone.layer1.1.conv1.weight - torch.Size([64, 256, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,158 - mmcv - INFO - 
+backbone.layer1.1.bn1.weight - torch.Size([64]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,158 - mmcv - INFO - 
+backbone.layer1.1.bn1.bias - torch.Size([64]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,158 - mmcv - INFO - 
+backbone.layer1.1.conv2.weight - torch.Size([64, 64, 3, 3]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,158 - mmcv - INFO - 
+backbone.layer1.1.bn2.weight - torch.Size([64]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,158 - mmcv - INFO - 
+backbone.layer1.1.bn2.bias - torch.Size([64]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,158 - mmcv - INFO - 
+backbone.layer1.1.conv3.weight - torch.Size([256, 64, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer1.1.bn3.weight - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer1.1.bn3.bias - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer1.2.conv1.weight - torch.Size([64, 256, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer1.2.bn1.weight - torch.Size([64]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer1.2.bn1.bias - torch.Size([64]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer1.2.conv2.weight - torch.Size([64, 64, 3, 3]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer1.2.bn2.weight - torch.Size([64]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer1.2.bn2.bias - torch.Size([64]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer1.2.conv3.weight - torch.Size([256, 64, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer1.2.bn3.weight - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer1.2.bn3.bias - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer2.0.conv1.weight - torch.Size([128, 256, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer2.0.bn1.weight - torch.Size([128]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer2.0.bn1.bias - torch.Size([128]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer2.0.conv2.weight - torch.Size([128, 128, 3, 3]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer2.0.bn2.weight - torch.Size([128]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer2.0.bn2.bias - torch.Size([128]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer2.0.conv3.weight - torch.Size([512, 128, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer2.0.bn3.weight - torch.Size([512]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer2.0.bn3.bias - torch.Size([512]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer2.0.downsample.0.weight - torch.Size([512, 256, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer2.0.downsample.1.weight - torch.Size([512]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer2.0.downsample.1.bias - torch.Size([512]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer2.1.conv1.weight - torch.Size([128, 512, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer2.1.bn1.weight - torch.Size([128]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer2.1.bn1.bias - torch.Size([128]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer2.1.conv2.weight - torch.Size([128, 128, 3, 3]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer2.1.bn2.weight - torch.Size([128]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer2.1.bn2.bias - torch.Size([128]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer2.1.conv3.weight - torch.Size([512, 128, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer2.1.bn3.weight - torch.Size([512]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer2.1.bn3.bias - torch.Size([512]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer2.2.conv1.weight - torch.Size([128, 512, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer2.2.bn1.weight - torch.Size([128]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer2.2.bn1.bias - torch.Size([128]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer2.2.conv2.weight - torch.Size([128, 128, 3, 3]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer2.2.bn2.weight - torch.Size([128]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer2.2.bn2.bias - torch.Size([128]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer2.2.conv3.weight - torch.Size([512, 128, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer2.2.bn3.weight - torch.Size([512]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer2.2.bn3.bias - torch.Size([512]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer2.3.conv1.weight - torch.Size([128, 512, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer2.3.bn1.weight - torch.Size([128]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer2.3.bn1.bias - torch.Size([128]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer2.3.conv2.weight - torch.Size([128, 128, 3, 3]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer2.3.bn2.weight - torch.Size([128]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer2.3.bn2.bias - torch.Size([128]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer2.3.conv3.weight - torch.Size([512, 128, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer2.3.bn3.weight - torch.Size([512]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer2.3.bn3.bias - torch.Size([512]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer3.0.conv1.weight - torch.Size([256, 512, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer3.0.bn1.weight - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer3.0.bn1.bias - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer3.0.conv2.weight - torch.Size([256, 256, 3, 3]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer3.0.bn2.weight - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer3.0.bn2.bias - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.0.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.0.bn3.weight - torch.Size([1024]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.0.bn3.bias - torch.Size([1024]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.0.downsample.0.weight - torch.Size([1024, 512, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.0.downsample.1.weight - torch.Size([1024]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.0.downsample.1.bias - torch.Size([1024]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.1.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.1.bn1.weight - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.1.bn1.bias - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.1.conv2.weight - torch.Size([256, 256, 3, 3]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.1.bn2.weight - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.1.bn2.bias - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.1.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.1.bn3.weight - torch.Size([1024]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.1.bn3.bias - torch.Size([1024]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.2.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.2.bn1.weight - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.2.bn1.bias - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.2.conv2.weight - torch.Size([256, 256, 3, 3]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.2.bn2.weight - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.2.bn2.bias - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.2.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.2.bn3.weight - torch.Size([1024]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.2.bn3.bias - torch.Size([1024]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.3.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.3.bn1.weight - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.3.bn1.bias - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.3.conv2.weight - torch.Size([256, 256, 3, 3]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer3.3.bn2.weight - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer3.3.bn2.bias - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer3.3.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer3.3.bn3.weight - torch.Size([1024]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer3.3.bn3.bias - torch.Size([1024]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer3.4.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer3.4.bn1.weight - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer3.4.bn1.bias - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer3.4.conv2.weight - torch.Size([256, 256, 3, 3]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer3.4.bn2.weight - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer3.4.bn2.bias - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer3.4.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer3.4.bn3.weight - torch.Size([1024]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer3.4.bn3.bias - torch.Size([1024]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer3.5.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer3.5.bn1.weight - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer3.5.bn1.bias - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer3.5.conv2.weight - torch.Size([256, 256, 3, 3]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer3.5.bn2.weight - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer3.5.bn2.bias - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer3.5.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer3.5.bn3.weight - torch.Size([1024]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer3.5.bn3.bias - torch.Size([1024]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer4.0.conv1.weight - torch.Size([512, 1024, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer4.0.bn1.weight - torch.Size([512]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer4.0.bn1.bias - torch.Size([512]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer4.0.conv2.weight - torch.Size([512, 512, 3, 3]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer4.0.bn2.weight - torch.Size([512]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+backbone.layer4.0.bn2.bias - torch.Size([512]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+backbone.layer4.0.conv3.weight - torch.Size([2048, 512, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+backbone.layer4.0.bn3.weight - torch.Size([2048]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+backbone.layer4.0.bn3.bias - torch.Size([2048]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+backbone.layer4.0.downsample.0.weight - torch.Size([2048, 1024, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+backbone.layer4.0.downsample.1.weight - torch.Size([2048]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+backbone.layer4.0.downsample.1.bias - torch.Size([2048]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+backbone.layer4.1.conv1.weight - torch.Size([512, 2048, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+backbone.layer4.1.bn1.weight - torch.Size([512]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+backbone.layer4.1.bn1.bias - torch.Size([512]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+backbone.layer4.1.conv2.weight - torch.Size([512, 512, 3, 3]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+backbone.layer4.1.bn2.weight - torch.Size([512]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+backbone.layer4.1.bn2.bias - torch.Size([512]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+backbone.layer4.1.conv3.weight - torch.Size([2048, 512, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+backbone.layer4.1.bn3.weight - torch.Size([2048]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+backbone.layer4.1.bn3.bias - torch.Size([2048]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+backbone.layer4.2.conv1.weight - torch.Size([512, 2048, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+backbone.layer4.2.bn1.weight - torch.Size([512]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+backbone.layer4.2.bn1.bias - torch.Size([512]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+backbone.layer4.2.conv2.weight - torch.Size([512, 512, 3, 3]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+backbone.layer4.2.bn2.weight - torch.Size([512]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+backbone.layer4.2.bn2.bias - torch.Size([512]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+backbone.layer4.2.conv3.weight - torch.Size([2048, 512, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+backbone.layer4.2.bn3.weight - torch.Size([2048]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+backbone.layer4.2.bn3.bias - torch.Size([2048]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+neck.lateral_convs.0.conv.weight - torch.Size([256, 256, 1, 1]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+neck.lateral_convs.0.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of FasterRCNN  
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+neck.lateral_convs.1.conv.weight - torch.Size([256, 512, 1, 1]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+neck.lateral_convs.1.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of FasterRCNN  
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+neck.lateral_convs.2.conv.weight - torch.Size([256, 1024, 1, 1]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+neck.lateral_convs.2.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of FasterRCNN  
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+neck.lateral_convs.3.conv.weight - torch.Size([256, 2048, 1, 1]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+neck.lateral_convs.3.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of FasterRCNN  
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+neck.fpn_convs.0.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+neck.fpn_convs.0.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of FasterRCNN  
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+neck.fpn_convs.1.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+neck.fpn_convs.1.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of FasterRCNN  
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+neck.fpn_convs.2.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+neck.fpn_convs.2.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of FasterRCNN  
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+neck.fpn_convs.3.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+neck.fpn_convs.3.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of FasterRCNN  
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+rpn_head.rpn_conv.weight - torch.Size([256, 256, 3, 3]): 
+NormalInit: mean=0, std=0.01, bias=0 
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+rpn_head.rpn_conv.bias - torch.Size([256]): 
+NormalInit: mean=0, std=0.01, bias=0 
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+rpn_head.rpn_cls.weight - torch.Size([3, 256, 1, 1]): 
+NormalInit: mean=0, std=0.01, bias=0 
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+rpn_head.rpn_cls.bias - torch.Size([3]): 
+NormalInit: mean=0, std=0.01, bias=0 
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+rpn_head.rpn_reg.weight - torch.Size([12, 256, 1, 1]): 
+NormalInit: mean=0, std=0.01, bias=0 
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+rpn_head.rpn_reg.bias - torch.Size([12]): 
+NormalInit: mean=0, std=0.01, bias=0 
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+roi_head.bbox_head.fc_cls.weight - torch.Size([2, 1024]): 
+NormalInit: mean=0, std=0.01, bias=0 
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+roi_head.bbox_head.fc_cls.bias - torch.Size([2]): 
+NormalInit: mean=0, std=0.01, bias=0 
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+roi_head.bbox_head.fc_reg.weight - torch.Size([4, 1024]): 
+NormalInit: mean=0, std=0.001, bias=0 
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+roi_head.bbox_head.fc_reg.bias - torch.Size([4]): 
+NormalInit: mean=0, std=0.001, bias=0 
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+roi_head.bbox_head.shared_fcs.0.weight - torch.Size([1024, 12544]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+ 
+2023-02-09 18:00:24,165 - mmcv - INFO - 
+roi_head.bbox_head.shared_fcs.0.bias - torch.Size([1024]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+ 
+2023-02-09 18:00:24,165 - mmcv - INFO - 
+roi_head.bbox_head.shared_fcs.1.weight - torch.Size([1024, 1024]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+ 
+2023-02-09 18:00:24,165 - mmcv - INFO - 
+roi_head.bbox_head.shared_fcs.1.bias - torch.Size([1024]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+ 
+/opt/conda/lib/python3.10/site-packages/mmdet/datasets/custom.py:181: UserWarning: CustomDataset does not support filtering empty gt images.
+  warnings.warn(
+2023-02-09 18:00:25,885 - mmdet - INFO - Training with 1 GPU(s) with 16 samples per GPU. The total batch size is 16.
+2023-02-09 18:00:25,885 - mmdet - INFO - The batch size match the base batch size: 16, will not scaling the LR (0.02).
+2023-02-09 18:00:25,887 - mmdet - INFO - load checkpoint from local path: /var/www/storage/maia_jobs/faster_rcnn_r50_fpn_1x_coco_20200130-047c8118.pth
+2023-02-09 18:00:26,006 - mmdet - WARNING - The model and loaded state dict do not match exactly
+
+size mismatch for roi_head.bbox_head.fc_cls.weight: copying a param with shape torch.Size([81, 1024]) from checkpoint, the shape in current model is torch.Size([2, 1024]).
+size mismatch for roi_head.bbox_head.fc_cls.bias: copying a param with shape torch.Size([81]) from checkpoint, the shape in current model is torch.Size([2]).
+size mismatch for roi_head.bbox_head.fc_reg.weight: copying a param with shape torch.Size([320, 1024]) from checkpoint, the shape in current model is torch.Size([4, 1024]).
+size mismatch for roi_head.bbox_head.fc_reg.bias: copying a param with shape torch.Size([320]) from checkpoint, the shape in current model is torch.Size([4]).
+/opt/conda/lib/python3.10/site-packages/mmcv/runner/utils.py:28: UserWarning: Host or user not found: 'getpwuid(): uid not found: 1002'
+  warnings.warn(f'Host or user not found: {str(e)}')
+2023-02-09 18:00:26,014 - mmdet - INFO - Start running, host: , work_dir: /var/www/storage/maia_jobs/maia-41-object-detection/work_dir
+2023-02-09 18:00:26,014 - mmdet - INFO - Hooks will be executed in the following order:
+before_run:
+(VERY_HIGH   ) StepLrUpdaterHook                  
+(NORMAL      ) CheckpointHook                     
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_train_epoch:
+(VERY_HIGH   ) StepLrUpdaterHook                  
+(NORMAL      ) NumClassCheckHook                  
+(LOW         ) IterTimerHook                      
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_train_iter:
+(VERY_HIGH   ) StepLrUpdaterHook                  
+(LOW         ) IterTimerHook                      
+ -------------------- 
+after_train_iter:
+(ABOVE_NORMAL) OptimizerHook                      
+(NORMAL      ) CheckpointHook                     
+(LOW         ) IterTimerHook                      
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+after_train_epoch:
+(NORMAL      ) CheckpointHook                     
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_val_epoch:
+(NORMAL      ) NumClassCheckHook                  
+(LOW         ) IterTimerHook                      
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_val_iter:
+(LOW         ) IterTimerHook                      
+ -------------------- 
+after_val_iter:
+(LOW         ) IterTimerHook                      
+ -------------------- 
+after_val_epoch:
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+after_run:
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+2023-02-09 18:00:26,014 - mmdet - INFO - workflow: [('train', 1)], max: 12 epochs
+2023-02-09 18:00:26,015 - mmdet - INFO - Checkpoints will be saved to /var/www/storage/maia_jobs/maia-41-object-detection/work_dir by HardDiskBackend.
+Traceback (most recent call last):
+  File "/var/www/vendor/biigle/maia/src/config/../resources/scripts/object-detection/TrainingRunner.py", line 143, in <module>
+    output = runner.run()
+  File "/var/www/vendor/biigle/maia/src/config/../resources/scripts/object-detection/TrainingRunner.py", line 121, in run
+    train_detector(
+  File "/opt/conda/lib/python3.10/site-packages/mmdet/apis/train.py", line 246, in train_detector
+    runner.run(data_loaders, cfg.workflow)
+  File "/opt/conda/lib/python3.10/site-packages/mmcv/runner/epoch_based_runner.py", line 136, in run
+    epoch_runner(data_loaders[i], **kwargs)
+  File "/opt/conda/lib/python3.10/site-packages/mmcv/runner/epoch_based_runner.py", line 54, in train
+    self.call_hook('after_train_iter')
+  File "/opt/conda/lib/python3.10/site-packages/mmcv/runner/base_runner.py", line 317, in call_hook
+    getattr(hook, fn_name)(self)
+  File "/opt/conda/lib/python3.10/site-packages/mmcv/runner/hooks/optimizer.py", line 65, in after_train_iter
+    runner.outputs['loss'].backward()
+  File "/opt/conda/lib/python3.10/site-packages/torch/_tensor.py", line 488, in backward
+    torch.autograd.backward(
+  File "/opt/conda/lib/python3.10/site-packages/torch/autograd/__init__.py", line 197, in backward
+    Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 392.00 MiB (GPU 0; 7.83 GiB total capacity; 5.43 GiB already allocated; 30.44 MiB free; 5.96 GiB reserved in total by PyTorch) If reserved memory is >> allocated memory try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF
+ {"exception":"[object] (Exception(code: 1): Error while executing python command '/var/www/vendor/biigle/maia/src/config/../resources/scripts/object-detection/TrainingRunner.py /var/www/storage/maia_jobs/maia-41-object-detection/input-training.json /var/www/storage/maia_jobs/maia-41-object-detection/output-dataset.json':
+/opt/conda/lib/python3.10/site-packages/mmcv/__init__.py:20: UserWarning: On January 1, 2023, MMCV will release v2.0.0, in which it will remove components related to the training process and add a data transformation module. In addition, it will rename the package names mmcv to mmcv-lite and mmcv-full to mmcv. See https://github.com/open-mmlab/mmcv/blob/master/docs/en/compatibility.md for more details.
+  warnings.warn(
+Matplotlib created a temporary config/cache directory at /tmp/matplotlib-3rw797a2 because the default path (/.config/matplotlib) is not a writable directory; it is highly recommended to set the MPLCONFIGDIR environment variable to a writable directory, in particular to speed up the import of Matplotlib and to better support multiprocessing.
+/opt/conda/lib/python3.10/site-packages/mmdet/utils/setup_env.py:38: UserWarning: Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed.
+  warnings.warn(
+/opt/conda/lib/python3.10/site-packages/mmdet/utils/setup_env.py:48: UserWarning: Setting MKL_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed.
+  warnings.warn(
+/bin/sh: 1: gcc: not found
+2023-02-09 18:00:22,490 - mmdet - INFO - Environment info:
+------------------------------------------------------------
+sys.platform: linux
+Python: 3.10.8 (main, Nov  4 2022, 13:48:29) [GCC 11.2.0]
+CUDA available: True
+GPU 0: NVIDIA A16-8Q
+CUDA_HOME: /opt/conda
+NVCC: Cuda compilation tools, release 11.6, V11.6.124
+GCC: n/a
+PyTorch: 1.13.1
+PyTorch compiling details: PyTorch built with:
+  - GCC 9.3
+  - C++ Version: 201402
+  - Intel(R) oneAPI Math Kernel Library Version 2021.4-Product Build 20210904 for Intel(R) 64 architecture applications
+  - Intel(R) MKL-DNN v2.6.0 (Git Hash 52b5f107dd9cf10910aaa19cb47f3abf9b349815)
+  - OpenMP 201511 (a.k.a. OpenMP 4.5)
+  - LAPACK is enabled (usually provided by MKL)
+  - NNPACK is enabled
+  - CPU capability usage: AVX2
+  - CUDA Runtime 11.6
+  - NVCC architecture flags: -gencode;arch=compute_37,code=sm_37;-gencode;arch=compute_50,code=sm_50;-gencode;arch=compute_60,code=sm_60;-gencode;arch=compute_61,code=sm_61;-gencode;arch=compute_70,code=sm_70;-gencode;arch=compute_75,code=sm_75;-gencode;arch=compute_80,code=sm_80;-gencode;arch=compute_86,code=sm_86;-gencode;arch=compute_37,code=compute_37
+  - CuDNN 8.3.2  (built against CUDA 11.5)
+  - Magma 2.6.1
+  - Build settings: BLAS_INFO=mkl, BUILD_TYPE=Release, CUDA_VERSION=11.6, CUDNN_VERSION=8.3.2, CXX_COMPILER=/opt/rh/devtoolset-9/root/usr/bin/c++, CXX_FLAGS= -fabi-version=11 -Wno-deprecated -fvisibility-inlines-hidden -DUSE_PTHREADPOOL -fopenmp -DNDEBUG -DUSE_KINETO -DUSE_FBGEMM -DUSE_QNNPACK -DUSE_PYTORCH_QNNPACK -DUSE_XNNPACK -DSYMBOLICATE_MOBILE_DEBUG_HANDLE -DEDGE_PROFILER_USE_KINETO -O2 -fPIC -Wno-narrowing -Wall -Wextra -Werror=return-type -Werror=non-virtual-dtor -Wno-missing-field-initializers -Wno-type-limits -Wno-array-bounds -Wno-unknown-pragmas -Wunused-local-typedefs -Wno-unused-parameter -Wno-unused-function -Wno-unused-result -Wno-strict-overflow -Wno-strict-aliasing -Wno-error=deprecated-declarations -Wno-stringop-overflow -Wno-psabi -Wno-error=pedantic -Wno-error=redundant-decls -Wno-error=old-style-cast -fdiagnostics-color=always -faligned-new -Wno-unused-but-set-variable -Wno-maybe-uninitialized -fno-math-errno -fno-trapping-math -Werror=format -Werror=cast-function-type -Wno-stringop-overflow, LAPACK_INFO=mkl, PERF_WITH_AVX=1, PERF_WITH_AVX2=1, PERF_WITH_AVX512=1, TORCH_VERSION=1.13.1, USE_CUDA=ON, USE_CUDNN=ON, USE_EXCEPTION_PTR=1, USE_GFLAGS=OFF, USE_GLOG=OFF, USE_MKL=ON, USE_MKLDNN=ON, USE_MPI=OFF, USE_NCCL=ON, USE_NNPACK=ON, USE_OPENMP=ON, USE_ROCM=OFF, 
+
+TorchVision: 0.14.1
+OpenCV: 4.7.0
+MMCV: 1.7.1
+MMCV Compiler: GCC 9.3
+MMCV CUDA Compiler: 11.6
+MMDetection: 2.28.1+unknown
+------------------------------------------------------------
+
+2023-02-09 18:00:23,368 - mmdet - INFO - Config:
+classes = ['interesting']
+model = dict(
+    type='FasterRCNN',
+    backbone=dict(
+        type='ResNet',
+        depth=50,
+        num_stages=4,
+        out_indices=(0, 1, 2, 3),
+        frozen_stages=1,
+        norm_cfg=dict(type='BN', requires_grad=True),
+        norm_eval=True,
+        style='pytorch',
+        init_cfg=dict(
+            type='Pretrained',
+            checkpoint='/var/www/storage/maia_jobs/resnet50-11ad3fa6.pth')),
+    neck=dict(
+        type='FPN',
+        in_channels=[256, 512, 1024, 2048],
+        out_channels=256,
+        num_outs=5),
+    rpn_head=dict(
+        type='RPNHead',
+        in_channels=256,
+        feat_channels=256,
+        anchor_generator=dict(
+            type='AnchorGenerator',
+            scales=[8],
+            ratios=[0.5, 1.0, 2.0],
+            strides=[4, 8, 16, 32, 64]),
+        bbox_coder=dict(
+            type='DeltaXYWHBBoxCoder',
+            target_means=[0.0, 0.0, 0.0, 0.0],
+            target_stds=[1.0, 1.0, 1.0, 1.0]),
+        loss_cls=dict(
+            type='CrossEntropyLoss', use_sigmoid=True, loss_weight=1.0),
+        loss_bbox=dict(type='L1Loss', loss_weight=1.0)),
+    roi_head=dict(
+        type='StandardRoIHead',
+        bbox_roi_extractor=dict(
+            type='SingleRoIExtractor',
+            roi_layer=dict(type='RoIAlign', output_size=7, sampling_ratio=0),
+            out_channels=256,
+            featmap_strides=[4, 8, 16, 32]),
+        bbox_head=dict(
+            type='Shared2FCBBoxHead',
+            in_channels=256,
+            fc_out_channels=1024,
+            roi_feat_size=7,
+            num_classes=1,
+            bbox_coder=dict(
+                type='DeltaXYWHBBoxCoder',
+                target_means=[0.0, 0.0, 0.0, 0.0],
+                target_stds=[0.1, 0.1, 0.2, 0.2]),
+            reg_class_agnostic=False,
+            loss_cls=dict(
+                type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0),
+            loss_bbox=dict(type='L1Loss', loss_weight=1.0))),
+    train_cfg=dict(
+        rpn=dict(
+            assigner=dict(
+                type='MaxIoUAssigner',
+                pos_iou_thr=0.7,
+                neg_iou_thr=0.3,
+                min_pos_iou=0.3,
+                match_low_quality=True,
+                ignore_iof_thr=-1),
+            sampler=dict(
+                type='RandomSampler',
+                num=256,
+                pos_fraction=0.5,
+                neg_pos_ub=-1,
+                add_gt_as_proposals=False),
+            allowed_border=-1,
+            pos_weight=-1,
+            debug=False),
+        rpn_proposal=dict(
+            nms_pre=2000,
+            max_per_img=1000,
+            nms=dict(type='nms', iou_threshold=0.7),
+            min_bbox_size=0),
+        rcnn=dict(
+            assigner=dict(
+                type='MaxIoUAssigner',
+                pos_iou_thr=0.5,
+                neg_iou_thr=0.5,
+                min_pos_iou=0.5,
+                match_low_quality=False,
+                ignore_iof_thr=-1),
+            sampler=dict(
+                type='RandomSampler',
+                num=512,
+                pos_fraction=0.25,
+                neg_pos_ub=-1,
+                add_gt_as_proposals=True),
+            pos_weight=-1,
+            debug=False)),
+    test_cfg=dict(
+        rpn=dict(
+            nms_pre=1000,
+            max_per_img=1000,
+            nms=dict(type='nms', iou_threshold=0.7),
+            min_bbox_size=0),
+        rcnn=dict(
+            score_thr=0.05,
+            nms=dict(type='nms', iou_threshold=0.5),
+            max_per_img=100)))
+dataset_type = 'CustomDataset'
+img_norm_cfg = dict(
+    mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
+train_pipeline = [
+    dict(type='LoadImageFromFile', color_type='unchanged'),
+    dict(type='LoadAnnotations', with_bbox=True),
+    dict(type='RandomCrop', crop_size=(512, 512)),
+    dict(
+        type='Albu',
+        skip_img_without_anno=True,
+        bbox_params=dict(
+            type='BboxParams',
+            format='pascal_voc',
+            label_fields=['gt_labels'],
+            filter_lost_elements=True,
+            min_area=100),
+        keymap=dict(img='image', gt_masks='masks', gt_bboxes='bboxes'),
+        transforms=[
+            dict(
+                type='SomeOf',
+                n=4,
+                p=0.25,
+                replace=False,
+                transforms=[
+                    dict(type='Flip'),
+                    dict(type='RandomRotate90'),
+                    dict(type='GaussianBlur', sigma_limit=[1.0, 2.0]),
+                    dict(
+                        type='ImageCompression',
+                        quality_lower=25,
+                        quality_upper=50)
+                ])
+        ]),
+    dict(
+        type='Normalize',
+        mean=[123.675, 116.28, 103.53],
+        std=[58.395, 57.12, 57.375],
+        to_rgb=True),
+    dict(type='Pad', size_divisor=32),
+    dict(type='DefaultFormatBundle'),
+    dict(
+        type='Collect',
+        keys=['img', 'gt_bboxes', 'gt_labels'],
+        meta_keys=[
+            'filename', 'ori_filename', 'ori_shape', 'img_shape', 'pad_shape',
+            'scale_factor', 'img_norm_cfg'
+        ])
+]
+test_pipeline = [
+    dict(type='LoadImageFromFile', color_type='unchanged'),
+    dict(
+        type='MultiScaleFlipAug',
+        scale_factor=1,
+        flip=False,
+        transforms=[
+            dict(
+                type='Normalize',
+                mean=[123.675, 116.28, 103.53],
+                std=[58.395, 57.12, 57.375],
+                to_rgb=True),
+            dict(type='Pad', size_divisor=32),
+            dict(type='ImageToTensor', keys=['img']),
+            dict(type='Collect', keys=['img'])
+        ])
+]
+data = dict(
+    samples_per_gpu=16,
+    workers_per_gpu=10,
+    train=dict(
+        type='CustomDataset',
+        ann_file=
+        '/var/www/storage/maia_jobs/maia-41-object-detection/train_dataset.pkl',
+        img_prefix=
+        '/var/www/storage/maia_jobs/maia-41-object-detection/training_images',
+        pipeline=[
+            dict(type='LoadImageFromFile', color_type='unchanged'),
+            dict(type='LoadAnnotations', with_bbox=True),
+            dict(type='RandomCrop', crop_size=(512, 512)),
+            dict(
+                type='Albu',
+                skip_img_without_anno=True,
+                bbox_params=dict(
+                    type='BboxParams',
+                    format='pascal_voc',
+                    label_fields=['gt_labels'],
+                    filter_lost_elements=True,
+                    min_area=100),
+                keymap=dict(img='image', gt_masks='masks', gt_bboxes='bboxes'),
+                transforms=[
+                    dict(
+                        type='SomeOf',
+                        n=4,
+                        p=0.25,
+                        replace=False,
+                        transforms=[
+                            dict(type='Flip'),
+                            dict(type='RandomRotate90'),
+                            dict(type='GaussianBlur', sigma_limit=[1.0, 2.0]),
+                            dict(
+                                type='ImageCompression',
+                                quality_lower=25,
+                                quality_upper=50)
+                        ])
+                ]),
+            dict(
+                type='Normalize',
+                mean=[123.675, 116.28, 103.53],
+                std=[58.395, 57.12, 57.375],
+                to_rgb=True),
+            dict(type='Pad', size_divisor=32),
+            dict(type='DefaultFormatBundle'),
+            dict(
+                type='Collect',
+                keys=['img', 'gt_bboxes', 'gt_labels'],
+                meta_keys=[
+                    'filename', 'ori_filename', 'ori_shape', 'img_shape',
+                    'pad_shape', 'scale_factor', 'img_norm_cfg'
+                ])
+        ],
+        classes=('interesting', )),
+    val=dict(
+        type='CustomDataset',
+        ann_file='',
+        img_prefix='',
+        pipeline=[
+            dict(type='LoadImageFromFile', color_type='unchanged'),
+            dict(
+                type='MultiScaleFlipAug',
+                scale_factor=1,
+                flip=False,
+                transforms=[
+                    dict(
+                        type='Normalize',
+                        mean=[123.675, 116.28, 103.53],
+                        std=[58.395, 57.12, 57.375],
+                        to_rgb=True),
+                    dict(type='Pad', size_divisor=32),
+                    dict(type='ImageToTensor', keys=['img']),
+                    dict(type='Collect', keys=['img'])
+                ])
+        ],
+        classes=('interesting', )),
+    test=dict(
+        type='CustomDataset',
+        ann_file='',
+        img_prefix='',
+        pipeline=[
+            dict(type='LoadImageFromFile', color_type='unchanged'),
+            dict(
+                type='MultiScaleFlipAug',
+                scale_factor=1,
+                flip=False,
+                transforms=[
+                    dict(
+                        type='Normalize',
+                        mean=[123.675, 116.28, 103.53],
+                        std=[58.395, 57.12, 57.375],
+                        to_rgb=True),
+                    dict(type='Pad', size_divisor=32),
+                    dict(type='ImageToTensor', keys=['img']),
+                    dict(type='Collect', keys=['img'])
+                ])
+        ],
+        classes=('interesting', )))
+evaluation = dict(interval=1, metric=['mAP'])
+optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
+optimizer_config = dict(grad_clip=None)
+lr_config = dict(
+    policy='step',
+    warmup='linear',
+    warmup_iters=500,
+    warmup_ratio=0.001,
+    step=[8, 11])
+epochs = 12
+runner = dict(type='EpochBasedRunner', max_epochs=12)
+checkpoint_config = dict(interval=12)
+log_config = dict(interval=1, hooks=[dict(type='TextLoggerHook')])
+custom_hooks = [dict(type='NumClassCheckHook')]
+dist_params = dict(backend='nccl')
+log_level = 'INFO'
+load_from = '/var/www/storage/maia_jobs/faster_rcnn_r50_fpn_1x_coco_20200130-047c8118.pth'
+resume_from = None
+workflow = [('train', 1)]
+opencv_num_threads = 0
+mp_start_method = 'fork'
+auto_scale_lr = dict(enable=True, base_batch_size=16)
+work_dir = '/var/www/storage/maia_jobs/maia-41-object-detection/work_dir'
+auto_resume = False
+gpu_ids = [0]
+
+2023-02-09 18:00:23,369 - mmdet - INFO - Set random seed to 1965117128, deterministic: False
+2023-02-09 18:00:23,881 - mmcv - INFO - initialize ResNet with init_cfg {'type': 'Pretrained', 'checkpoint': '/var/www/storage/maia_jobs/resnet50-11ad3fa6.pth'}
+2023-02-09 18:00:23,882 - mmcv - INFO - load model from: /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth
+2023-02-09 18:00:23,883 - mmcv - INFO - load checkpoint from local path: /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth
+2023-02-09 18:00:23,977 - mmcv - WARNING - The model and loaded state dict do not match exactly
+
+unexpected key in source state_dict: fc.weight, fc.bias
+
+2023-02-09 18:00:23,998 - mmcv - INFO - initialize FPN with init_cfg {'type': 'Xavier', 'layer': 'Conv2d', 'distribution': 'uniform'}
+2023-02-09 18:00:24,030 - mmcv - INFO - initialize RPNHead with init_cfg {'type': 'Normal', 'layer': 'Conv2d', 'std': 0.01}
+2023-02-09 18:00:24,035 - mmcv - INFO - initialize Shared2FCBBoxHead with init_cfg [{'type': 'Normal', 'std': 0.01, 'override': {'name': 'fc_cls'}}, {'type': 'Normal', 'std': 0.001, 'override': {'name': 'fc_reg'}}, {'type': 'Xavier', 'distribution': 'uniform', 'override': [{'name': 'shared_fcs'}, {'name': 'cls_fcs'}, {'name': 'reg_fcs'}]}]
+2023-02-09 18:00:24,158 - mmcv - INFO - 
+backbone.conv1.weight - torch.Size([64, 3, 7, 7]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,158 - mmcv - INFO - 
+backbone.bn1.weight - torch.Size([64]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,158 - mmcv - INFO - 
+backbone.bn1.bias - torch.Size([64]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,158 - mmcv - INFO - 
+backbone.layer1.0.conv1.weight - torch.Size([64, 64, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,158 - mmcv - INFO - 
+backbone.layer1.0.bn1.weight - torch.Size([64]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,158 - mmcv - INFO - 
+backbone.layer1.0.bn1.bias - torch.Size([64]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,158 - mmcv - INFO - 
+backbone.layer1.0.conv2.weight - torch.Size([64, 64, 3, 3]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,158 - mmcv - INFO - 
+backbone.layer1.0.bn2.weight - torch.Size([64]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,158 - mmcv - INFO - 
+backbone.layer1.0.bn2.bias - torch.Size([64]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,158 - mmcv - INFO - 
+backbone.layer1.0.conv3.weight - torch.Size([256, 64, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,158 - mmcv - INFO - 
+backbone.layer1.0.bn3.weight - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,158 - mmcv - INFO - 
+backbone.layer1.0.bn3.bias - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,158 - mmcv - INFO - 
+backbone.layer1.0.downsample.0.weight - torch.Size([256, 64, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,158 - mmcv - INFO - 
+backbone.layer1.0.downsample.1.weight - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,158 - mmcv - INFO - 
+backbone.layer1.0.downsample.1.bias - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,158 - mmcv - INFO - 
+backbone.layer1.1.conv1.weight - torch.Size([64, 256, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,158 - mmcv - INFO - 
+backbone.layer1.1.bn1.weight - torch.Size([64]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,158 - mmcv - INFO - 
+backbone.layer1.1.bn1.bias - torch.Size([64]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,158 - mmcv - INFO - 
+backbone.layer1.1.conv2.weight - torch.Size([64, 64, 3, 3]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,158 - mmcv - INFO - 
+backbone.layer1.1.bn2.weight - torch.Size([64]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,158 - mmcv - INFO - 
+backbone.layer1.1.bn2.bias - torch.Size([64]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,158 - mmcv - INFO - 
+backbone.layer1.1.conv3.weight - torch.Size([256, 64, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer1.1.bn3.weight - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer1.1.bn3.bias - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer1.2.conv1.weight - torch.Size([64, 256, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer1.2.bn1.weight - torch.Size([64]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer1.2.bn1.bias - torch.Size([64]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer1.2.conv2.weight - torch.Size([64, 64, 3, 3]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer1.2.bn2.weight - torch.Size([64]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer1.2.bn2.bias - torch.Size([64]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer1.2.conv3.weight - torch.Size([256, 64, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer1.2.bn3.weight - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer1.2.bn3.bias - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer2.0.conv1.weight - torch.Size([128, 256, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer2.0.bn1.weight - torch.Size([128]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer2.0.bn1.bias - torch.Size([128]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer2.0.conv2.weight - torch.Size([128, 128, 3, 3]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer2.0.bn2.weight - torch.Size([128]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer2.0.bn2.bias - torch.Size([128]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer2.0.conv3.weight - torch.Size([512, 128, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer2.0.bn3.weight - torch.Size([512]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer2.0.bn3.bias - torch.Size([512]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer2.0.downsample.0.weight - torch.Size([512, 256, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer2.0.downsample.1.weight - torch.Size([512]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer2.0.downsample.1.bias - torch.Size([512]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer2.1.conv1.weight - torch.Size([128, 512, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer2.1.bn1.weight - torch.Size([128]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer2.1.bn1.bias - torch.Size([128]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer2.1.conv2.weight - torch.Size([128, 128, 3, 3]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,159 - mmcv - INFO - 
+backbone.layer2.1.bn2.weight - torch.Size([128]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer2.1.bn2.bias - torch.Size([128]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer2.1.conv3.weight - torch.Size([512, 128, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer2.1.bn3.weight - torch.Size([512]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer2.1.bn3.bias - torch.Size([512]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer2.2.conv1.weight - torch.Size([128, 512, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer2.2.bn1.weight - torch.Size([128]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer2.2.bn1.bias - torch.Size([128]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer2.2.conv2.weight - torch.Size([128, 128, 3, 3]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer2.2.bn2.weight - torch.Size([128]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer2.2.bn2.bias - torch.Size([128]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer2.2.conv3.weight - torch.Size([512, 128, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer2.2.bn3.weight - torch.Size([512]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer2.2.bn3.bias - torch.Size([512]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer2.3.conv1.weight - torch.Size([128, 512, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer2.3.bn1.weight - torch.Size([128]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer2.3.bn1.bias - torch.Size([128]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer2.3.conv2.weight - torch.Size([128, 128, 3, 3]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer2.3.bn2.weight - torch.Size([128]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer2.3.bn2.bias - torch.Size([128]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer2.3.conv3.weight - torch.Size([512, 128, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer2.3.bn3.weight - torch.Size([512]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer2.3.bn3.bias - torch.Size([512]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer3.0.conv1.weight - torch.Size([256, 512, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer3.0.bn1.weight - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer3.0.bn1.bias - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer3.0.conv2.weight - torch.Size([256, 256, 3, 3]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer3.0.bn2.weight - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,160 - mmcv - INFO - 
+backbone.layer3.0.bn2.bias - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.0.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.0.bn3.weight - torch.Size([1024]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.0.bn3.bias - torch.Size([1024]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.0.downsample.0.weight - torch.Size([1024, 512, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.0.downsample.1.weight - torch.Size([1024]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.0.downsample.1.bias - torch.Size([1024]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.1.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.1.bn1.weight - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.1.bn1.bias - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.1.conv2.weight - torch.Size([256, 256, 3, 3]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.1.bn2.weight - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.1.bn2.bias - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.1.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.1.bn3.weight - torch.Size([1024]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.1.bn3.bias - torch.Size([1024]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.2.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.2.bn1.weight - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.2.bn1.bias - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.2.conv2.weight - torch.Size([256, 256, 3, 3]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.2.bn2.weight - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.2.bn2.bias - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.2.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.2.bn3.weight - torch.Size([1024]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.2.bn3.bias - torch.Size([1024]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.3.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.3.bn1.weight - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.3.bn1.bias - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,161 - mmcv - INFO - 
+backbone.layer3.3.conv2.weight - torch.Size([256, 256, 3, 3]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer3.3.bn2.weight - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer3.3.bn2.bias - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer3.3.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer3.3.bn3.weight - torch.Size([1024]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer3.3.bn3.bias - torch.Size([1024]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer3.4.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer3.4.bn1.weight - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer3.4.bn1.bias - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer3.4.conv2.weight - torch.Size([256, 256, 3, 3]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer3.4.bn2.weight - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer3.4.bn2.bias - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer3.4.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer3.4.bn3.weight - torch.Size([1024]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer3.4.bn3.bias - torch.Size([1024]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer3.5.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer3.5.bn1.weight - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer3.5.bn1.bias - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer3.5.conv2.weight - torch.Size([256, 256, 3, 3]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer3.5.bn2.weight - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer3.5.bn2.bias - torch.Size([256]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer3.5.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer3.5.bn3.weight - torch.Size([1024]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer3.5.bn3.bias - torch.Size([1024]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer4.0.conv1.weight - torch.Size([512, 1024, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer4.0.bn1.weight - torch.Size([512]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer4.0.bn1.bias - torch.Size([512]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer4.0.conv2.weight - torch.Size([512, 512, 3, 3]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,162 - mmcv - INFO - 
+backbone.layer4.0.bn2.weight - torch.Size([512]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+backbone.layer4.0.bn2.bias - torch.Size([512]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+backbone.layer4.0.conv3.weight - torch.Size([2048, 512, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+backbone.layer4.0.bn3.weight - torch.Size([2048]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+backbone.layer4.0.bn3.bias - torch.Size([2048]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+backbone.layer4.0.downsample.0.weight - torch.Size([2048, 1024, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+backbone.layer4.0.downsample.1.weight - torch.Size([2048]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+backbone.layer4.0.downsample.1.bias - torch.Size([2048]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+backbone.layer4.1.conv1.weight - torch.Size([512, 2048, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+backbone.layer4.1.bn1.weight - torch.Size([512]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+backbone.layer4.1.bn1.bias - torch.Size([512]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+backbone.layer4.1.conv2.weight - torch.Size([512, 512, 3, 3]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+backbone.layer4.1.bn2.weight - torch.Size([512]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+backbone.layer4.1.bn2.bias - torch.Size([512]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+backbone.layer4.1.conv3.weight - torch.Size([2048, 512, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+backbone.layer4.1.bn3.weight - torch.Size([2048]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+backbone.layer4.1.bn3.bias - torch.Size([2048]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+backbone.layer4.2.conv1.weight - torch.Size([512, 2048, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+backbone.layer4.2.bn1.weight - torch.Size([512]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+backbone.layer4.2.bn1.bias - torch.Size([512]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+backbone.layer4.2.conv2.weight - torch.Size([512, 512, 3, 3]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+backbone.layer4.2.bn2.weight - torch.Size([512]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+backbone.layer4.2.bn2.bias - torch.Size([512]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+backbone.layer4.2.conv3.weight - torch.Size([2048, 512, 1, 1]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+backbone.layer4.2.bn3.weight - torch.Size([2048]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+backbone.layer4.2.bn3.bias - torch.Size([2048]): 
+PretrainedInit: load from /var/www/storage/maia_jobs/resnet50-11ad3fa6.pth 
+ 
+2023-02-09 18:00:24,163 - mmcv - INFO - 
+neck.lateral_convs.0.conv.weight - torch.Size([256, 256, 1, 1]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+neck.lateral_convs.0.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of FasterRCNN  
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+neck.lateral_convs.1.conv.weight - torch.Size([256, 512, 1, 1]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+neck.lateral_convs.1.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of FasterRCNN  
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+neck.lateral_convs.2.conv.weight - torch.Size([256, 1024, 1, 1]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+neck.lateral_convs.2.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of FasterRCNN  
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+neck.lateral_convs.3.conv.weight - torch.Size([256, 2048, 1, 1]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+neck.lateral_convs.3.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of FasterRCNN  
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+neck.fpn_convs.0.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+neck.fpn_convs.0.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of FasterRCNN  
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+neck.fpn_convs.1.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+neck.fpn_convs.1.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of FasterRCNN  
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+neck.fpn_convs.2.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+neck.fpn_convs.2.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of FasterRCNN  
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+neck.fpn_convs.3.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+neck.fpn_convs.3.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of FasterRCNN  
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+rpn_head.rpn_conv.weight - torch.Size([256, 256, 3, 3]): 
+NormalInit: mean=0, std=0.01, bias=0 
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+rpn_head.rpn_conv.bias - torch.Size([256]): 
+NormalInit: mean=0, std=0.01, bias=0 
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+rpn_head.rpn_cls.weight - torch.Size([3, 256, 1, 1]): 
+NormalInit: mean=0, std=0.01, bias=0 
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+rpn_head.rpn_cls.bias - torch.Size([3]): 
+NormalInit: mean=0, std=0.01, bias=0 
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+rpn_head.rpn_reg.weight - torch.Size([12, 256, 1, 1]): 
+NormalInit: mean=0, std=0.01, bias=0 
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+rpn_head.rpn_reg.bias - torch.Size([12]): 
+NormalInit: mean=0, std=0.01, bias=0 
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+roi_head.bbox_head.fc_cls.weight - torch.Size([2, 1024]): 
+NormalInit: mean=0, std=0.01, bias=0 
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+roi_head.bbox_head.fc_cls.bias - torch.Size([2]): 
+NormalInit: mean=0, std=0.01, bias=0 
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+roi_head.bbox_head.fc_reg.weight - torch.Size([4, 1024]): 
+NormalInit: mean=0, std=0.001, bias=0 
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+roi_head.bbox_head.fc_reg.bias - torch.Size([4]): 
+NormalInit: mean=0, std=0.001, bias=0 
+ 
+2023-02-09 18:00:24,164 - mmcv - INFO - 
+roi_head.bbox_head.shared_fcs.0.weight - torch.Size([1024, 12544]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+ 
+2023-02-09 18:00:24,165 - mmcv - INFO - 
+roi_head.bbox_head.shared_fcs.0.bias - torch.Size([1024]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+ 
+2023-02-09 18:00:24,165 - mmcv - INFO - 
+roi_head.bbox_head.shared_fcs.1.weight - torch.Size([1024, 1024]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+ 
+2023-02-09 18:00:24,165 - mmcv - INFO - 
+roi_head.bbox_head.shared_fcs.1.bias - torch.Size([1024]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+ 
+/opt/conda/lib/python3.10/site-packages/mmdet/datasets/custom.py:181: UserWarning: CustomDataset does not support filtering empty gt images.
+  warnings.warn(
+2023-02-09 18:00:25,885 - mmdet - INFO - Training with 1 GPU(s) with 16 samples per GPU. The total batch size is 16.
+2023-02-09 18:00:25,885 - mmdet - INFO - The batch size match the base batch size: 16, will not scaling the LR (0.02).
+2023-02-09 18:00:25,887 - mmdet - INFO - load checkpoint from local path: /var/www/storage/maia_jobs/faster_rcnn_r50_fpn_1x_coco_20200130-047c8118.pth
+2023-02-09 18:00:26,006 - mmdet - WARNING - The model and loaded state dict do not match exactly
+
+size mismatch for roi_head.bbox_head.fc_cls.weight: copying a param with shape torch.Size([81, 1024]) from checkpoint, the shape in current model is torch.Size([2, 1024]).
+size mismatch for roi_head.bbox_head.fc_cls.bias: copying a param with shape torch.Size([81]) from checkpoint, the shape in current model is torch.Size([2]).
+size mismatch for roi_head.bbox_head.fc_reg.weight: copying a param with shape torch.Size([320, 1024]) from checkpoint, the shape in current model is torch.Size([4, 1024]).
+size mismatch for roi_head.bbox_head.fc_reg.bias: copying a param with shape torch.Size([320]) from checkpoint, the shape in current model is torch.Size([4]).
+/opt/conda/lib/python3.10/site-packages/mmcv/runner/utils.py:28: UserWarning: Host or user not found: 'getpwuid(): uid not found: 1002'
+  warnings.warn(f'Host or user not found: {str(e)}')
+2023-02-09 18:00:26,014 - mmdet - INFO - Start running, host: , work_dir: /var/www/storage/maia_jobs/maia-41-object-detection/work_dir
+2023-02-09 18:00:26,014 - mmdet - INFO - Hooks will be executed in the following order:
+before_run:
+(VERY_HIGH   ) StepLrUpdaterHook                  
+(NORMAL      ) CheckpointHook                     
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_train_epoch:
+(VERY_HIGH   ) StepLrUpdaterHook                  
+(NORMAL      ) NumClassCheckHook                  
+(LOW         ) IterTimerHook                      
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_train_iter:
+(VERY_HIGH   ) StepLrUpdaterHook                  
+(LOW         ) IterTimerHook                      
+ -------------------- 
+after_train_iter:
+(ABOVE_NORMAL) OptimizerHook                      
+(NORMAL      ) CheckpointHook                     
+(LOW         ) IterTimerHook                      
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+after_train_epoch:
+(NORMAL      ) CheckpointHook                     
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_val_epoch:
+(NORMAL      ) NumClassCheckHook                  
+(LOW         ) IterTimerHook                      
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_val_iter:
+(LOW         ) IterTimerHook                      
+ -------------------- 
+after_val_iter:
+(LOW         ) IterTimerHook                      
+ -------------------- 
+after_val_epoch:
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+after_run:
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+2023-02-09 18:00:26,014 - mmdet - INFO - workflow: [('train', 1)], max: 12 epochs
+2023-02-09 18:00:26,015 - mmdet - INFO - Checkpoints will be saved to /var/www/storage/maia_jobs/maia-41-object-detection/work_dir by HardDiskBackend.
+Traceback (most recent call last):
+  File \"/var/www/vendor/biigle/maia/src/config/../resources/scripts/object-detection/TrainingRunner.py\", line 143, in <module>
+    output = runner.run()
+  File \"/var/www/vendor/biigle/maia/src/config/../resources/scripts/object-detection/TrainingRunner.py\", line 121, in run
+    train_detector(
+  File \"/opt/conda/lib/python3.10/site-packages/mmdet/apis/train.py\", line 246, in train_detector
+    runner.run(data_loaders, cfg.workflow)
+  File \"/opt/conda/lib/python3.10/site-packages/mmcv/runner/epoch_based_runner.py\", line 136, in run
+    epoch_runner(data_loaders[i], **kwargs)
+  File \"/opt/conda/lib/python3.10/site-packages/mmcv/runner/epoch_based_runner.py\", line 54, in train
+    self.call_hook('after_train_iter')
+  File \"/opt/conda/lib/python3.10/site-packages/mmcv/runner/base_runner.py\", line 317, in call_hook
+    getattr(hook, fn_name)(self)
+  File \"/opt/conda/lib/python3.10/site-packages/mmcv/runner/hooks/optimizer.py\", line 65, in after_train_iter
+    runner.outputs['loss'].backward()
+  File \"/opt/conda/lib/python3.10/site-packages/torch/_tensor.py\", line 488, in backward
+    torch.autograd.backward(
+  File \"/opt/conda/lib/python3.10/site-packages/torch/autograd/__init__.py\", line 197, in backward
+    Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 392.00 MiB (GPU 0; 7.83 GiB total capacity; 5.43 GiB already allocated; 30.44 MiB free; 5.96 GiB reserved in total by PyTorch) If reserved memory is >> allocated memory try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF
+ at /var/www/vendor/biigle/maia/src/Jobs/JobRequest.php:178)
+[stacktrace]
+#0 /var/www/vendor/biigle/maia/src/Jobs/ObjectDetectionRequest.php(193): Biigle\\Modules\\Maia\\Jobs\\JobRequest->python()
+#1 /var/www/vendor/biigle/maia/src/Jobs/ObjectDetectionRequest.php(81): Biigle\\Modules\\Maia\\Jobs\\ObjectDetectionRequest->performTraining()
+#2 [internal function]: Biigle\\Modules\\Maia\\Jobs\\ObjectDetectionRequest->Biigle\\Modules\\Maia\\Jobs\\{closure}()
+#3 /var/www/vendor/biigle/laravel-file-cache/src/FileCache.php(132): call_user_func()
+#4 /var/www/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(338): Biigle\\FileCache\\FileCache->batch()
+#5 /var/www/vendor/biigle/maia/src/Jobs/ObjectDetectionRequest.php(84): Illuminate\\Support\\Facades\\Facade::__callStatic()
+#6 /var/www/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(36): Biigle\\Modules\\Maia\\Jobs\\ObjectDetectionRequest->handle()
+#7 /var/www/vendor/laravel/framework/src/Illuminate/Container/Util.php(41): Illuminate\\Container\\BoundMethod::Illuminate\\Container\\{closure}()
+#8 /var/www/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(93): Illuminate\\Container\\Util::unwrapIfClosure()
+#9 /var/www/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(37): Illuminate\\Container\\BoundMethod::callBoundMethod()
+#10 /var/www/vendor/laravel/framework/src/Illuminate/Container/Container.php(661): Illuminate\\Container\\BoundMethod::call()
+#11 /var/www/vendor/laravel/framework/src/Illuminate/Bus/Dispatcher.php(128): Illuminate\\Container\\Container->call()
+#12 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(141): Illuminate\\Bus\\Dispatcher->Illuminate\\Bus\\{closure}()
+#13 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(116): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}()
+#14 /var/www/vendor/laravel/framework/src/Illuminate/Bus/Dispatcher.php(132): Illuminate\\Pipeline\\Pipeline->then()
+#15 /var/www/vendor/laravel/framework/src/Illuminate/Queue/CallQueuedHandler.php(124): Illuminate\\Bus\\Dispatcher->dispatchNow()
+#16 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(141): Illuminate\\Queue\\CallQueuedHandler->Illuminate\\Queue\\{closure}()
+#17 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(116): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}()
+#18 /var/www/vendor/laravel/framework/src/Illuminate/Queue/CallQueuedHandler.php(126): Illuminate\\Pipeline\\Pipeline->then()
+#19 /var/www/vendor/laravel/framework/src/Illuminate/Queue/CallQueuedHandler.php(70): Illuminate\\Queue\\CallQueuedHandler->dispatchThroughMiddleware()
+#20 /var/www/vendor/laravel/framework/src/Illuminate/Queue/Jobs/Job.php(98): Illuminate\\Queue\\CallQueuedHandler->call()
+#21 /var/www/vendor/laravel/framework/src/Illuminate/Queue/Worker.php(425): Illuminate\\Queue\\Jobs\\Job->fire()
+#22 /var/www/vendor/laravel/framework/src/Illuminate/Queue/Worker.php(375): Illuminate\\Queue\\Worker->process()
+#23 /var/www/vendor/laravel/framework/src/Illuminate/Queue/Worker.php(173): Illuminate\\Queue\\Worker->runJob()
+#24 /var/www/vendor/laravel/framework/src/Illuminate/Queue/Console/WorkCommand.php(147): Illuminate\\Queue\\Worker->daemon()
+#25 /var/www/vendor/laravel/framework/src/Illuminate/Queue/Console/WorkCommand.php(130): Illuminate\\Queue\\Console\\WorkCommand->runWorker()
+#26 /var/www/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(36): Illuminate\\Queue\\Console\\WorkCommand->handle()
+#27 /var/www/vendor/laravel/framework/src/Illuminate/Container/Util.php(41): Illuminate\\Container\\BoundMethod::Illuminate\\Container\\{closure}()
+#28 /var/www/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(93): Illuminate\\Container\\Util::unwrapIfClosure()
+#29 /var/www/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(37): Illuminate\\Container\\BoundMethod::callBoundMethod()
+#30 /var/www/vendor/laravel/framework/src/Illuminate/Container/Container.php(661): Illuminate\\Container\\BoundMethod::call()
+#31 /var/www/vendor/laravel/framework/src/Illuminate/Console/Command.php(183): Illuminate\\Container\\Container->call()
+#32 /var/www/vendor/symfony/console/Command/Command.php(291): Illuminate\\Console\\Command->execute()
+#33 /var/www/vendor/laravel/framework/src/Illuminate/Console/Command.php(153): Symfony\\Component\\Console\\Command\\Command->run()
+#34 /var/www/vendor/symfony/console/Application.php(1014): Illuminate\\Console\\Command->run()
+#35 /var/www/vendor/symfony/console/Application.php(301): Symfony\\Component\\Console\\Application->doRunCommand()
+#36 /var/www/vendor/symfony/console/Application.php(171): Symfony\\Component\\Console\\Application->doRun()
+#37 /var/www/vendor/laravel/framework/src/Illuminate/Console/Application.php(102): Symfony\\Component\\Console\\Application->run()
+#38 /var/www/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(155): Illuminate\\Console\\Application->run()
+#39 /var/www/artisan(37): Illuminate\\Foundation\\Console\\Kernel->handle()
+#40 {main}
+"} 
