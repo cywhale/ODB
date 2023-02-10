@@ -1,6 +1,19 @@
 #Kill maia job
 curl --insecure -I -X DELETE -u SU@email:TOKEN -H "Accept: application/json" https://localhost:8008/api/v1/maia-jobs/:id
 
+#Problem https://github.com/orgs/biigle/discussions/542#discussioncomment-4924052
+docker ps -a #find gpu-worker container
+#535e8b969b81   biigle/gpu-worker-dist   "php -d memory_limit…"
+sudo docker exec -u 0 -it 535e8b969b81 /bin/bash #-u 0 to get file edit permission
+# no vi in this docker, can only use sed
+cd /var/www/vendor/biigle/maia/src/resources/scripts/object-detection
+sed -i "s/'samples_per_gpu': params\['batch_size'\]/\'samples_per_gpu': int(params\['batch_size'\])/" TrainingRunner.py
+cat  # to confirm modification
+exit
+docker commit 535e8b969b81 biigle/gpu-worker-dist
+docker compose up -d
+
+
 #Problem 1
 #DetectionRunner.py: RuntimeError: module compiled against API version 0x10 but this version of numpy is 0xe
 #modify FROM tensorflow/tensorflow:latest-gpu (there is no tensorflow:2.5.3-gpu for current MAIA used)
