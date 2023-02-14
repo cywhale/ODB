@@ -1,5 +1,10 @@
-#Kill maia job
+# Kill maia job
 curl --insecure -I -X DELETE -u SU@email:TOKEN -H "Accept: application/json" https://localhost:8008/api/v1/maia-jobs/:id
+# Kill job instantly ( the Python process is probably killed but this was not propagated back into BIIGLE. In this case, the worker queue timeout will cancel the job after 24 hours.)
+# https://github.com/biigle/core/discussions/533
+$ docker compose exec worker php artisan tinker
+> $job = Biigle\Modules\Maia\MaiaJob::find(JOB_ID)
+> $job->delete()
 
 #Problem https://github.com/orgs/biigle/discussions/542#discussioncomment-4924052
 docker ps -a #find gpu-worker container
