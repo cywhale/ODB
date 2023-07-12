@@ -31,4 +31,6 @@ node_modules
 **/dist_*
 .Rproj.user
 .Rprofile
-
+**/env.config.json
+**/aras_tbl
+**/.here
