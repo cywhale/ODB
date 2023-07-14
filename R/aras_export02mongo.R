@@ -7,8 +7,8 @@ library(lubridate)
 library(jsonlite)
 
 setwd(here::here("ODB/R"))
-## Function used
 
+## Function used
 trim    = function (x) gsub("^\\s+|\\s+$", "", x)  ## Trim leading or trailing whitespace
 trim.01n= function (x) gsub("\\r","",gsub("\\n","",gsub("^\\s+|^\\+|\\s+$|\\+$", "", x)))  ## Trim leading or trailing whitespace, "\"
 
@@ -19,14 +19,10 @@ overwrite_ArasOut = TRUE #overwrite files under aras_tbl/
 
 conf = read.config(file="./env.config.json")
 
-#if (IN_MSWIN) {
-#require(RODBC)
-
 ## connect to MS SQL server database using ODBC
 ms_drv = odbcDriverConnect(paste0('driver={SQL Server};server=', conf$server,
                                   ';database=', conf$database, ';uid=', conf$user,
                                   ';pwd=', conf$pass))
-
 ## Aras related tables #================================================
 ## Trim columns such that no whitespace 
 ## cruise table
@@ -76,9 +72,6 @@ if (overwrite_ArasOut) {
 }
 
 #### merge and select wanted cruise ##
-#require(data.table)
-#require(magrittr)
-
 #cr_dt ISPUBLIC 0: not open (may has errors or not public data)
 
 cruise = cr_dt %>% setnames(1:dim(cr_dt)[2],tolower(colnames(cr_dt))) %>%
@@ -102,16 +95,16 @@ work = work_dt %>% setnames(1:dim(work_dt)[2],tolower(colnames(work_dt))) %>%
 #  merge(cruise[,c(1,3),with=F],by="cr_rid",all.x=T) %>% .[,cr_rid:=NULL] %>% 
 #  arrange(work_id) %>% data.table()
 
-project = prj_dt %>% setnames(1:dim(prj_dt)[2],tolounwer(colnames(prj_dt))) %>%
+project = prj_dt %>% setnames(1:dim(prj_dt)[2],tolower(colnames(prj_dt))) %>%
   .[,c(1:6,9,13,28,32),with=F] %>% setnames(c(1,9),c("prj_rid","cr_rid"))  %>%
   .[,prj_id:=seq_len(nrow(.))] %>% .[,c("prj_id",colnames(.)[1:(dim(.)[2]-1)]),with=F]
 #%>%
 #  merge(cruise[,c(1,3),with=F],by="cr_rid",all.x=T) %>% .[,cr_rid:=NULL] %>% 
 #  arrange(prj_id) %>% data.table()
 
-#======= create the link betwwen cr_aras_id and cid
-######## to utilize cruise_id....first, combine date and long-lat information
-
+#=== create the link betwwen cr_aras_id and cid
+#### to utilize cruise_id....first, combine date and long-lat information
+#### survey (CR not CSR) is not used in XML upload method (CSR), so no use here
 cr_info = merge(cruise[,.(cr_aras_id,departure_date,return_date,ispublic,uploaded)],
                 survey[,.(cr_aras_id,lat_deg,lon_deg,uploaded)] %>% 
                   .[,c("lat_min","lat_max","lon_min","lon_max", "uploaded"):=list(
@@ -121,7 +114,8 @@ cr_info = merge(cruise[,.(cr_aras_id,departure_date,return_date,ispublic,uploade
                      fifelse(all(is.na(lon_deg)),NA_real_,range(na.omit(lon_deg))[2]), uploaded),by="cr_aras_id"] %>%
                   .[,.(cr_aras_id,lat_min,lat_max,lon_min,lon_max,uploaded)] %>% unique(),
                   by=c("cr_aras_id", "uploaded"),all.x=T)
-#### manual fix
+
+#### manual fix typo
 # cr_dt["?大杰" %in% investigators,]
 cr_dt[grepl("?大杰",investigators), investigators:=gsub("\\?大杰", "溫大杰", investigators)]
 cr_dt[grepl("葉?田",investigators), investigators:=gsub("葉\\?田", "葉啟田", investigators)]
@@ -130,6 +124,22 @@ cr_dt[grepl("邱瑞?",primary_investigator), primary_investigator:=gsub("邱瑞\
 cr_dt[grepl("許瑞?",primary_investigator), primary_investigator:=gsub("許瑞\\?","許瑞峯", primary_investigator)]
 cr_dt[grepl("沒有資料",primary_investigator), primary_investigator:=NA_character_]
 cr_dt[grepl("台灣西南海域中鋼爐石海?區", cruise_name), cruise_name:="台灣西南海域中鋼爐石海抛區"]
+
+#### fix typo in project
+prj = project[!is.na(cr_rid),.(cr_rid, projects, pi, participants, project_number, institute)] %>%
+  .[,pid:= rowid(cr_rid)] %>% setkey(cr_rid)
+
+prj[project_number=="陳韋仁、魏志潾、李欣、董木華、許凌藍、梁卓景、湯淨、黃健豪、吳凱盈",
+    `:=`(project_number=NA_character_, participants="陳韋仁、魏志潾、李欣、董木華、許凌藍、梁卓景、湯淨、黃健豪、吳凱盈")]
+
+prj[project_number=="陳天任、徐佳瑜、徐彥承",
+    `:=`(project_number=NA_character_, participants="陳天任、徐佳瑜、徐彥承")]
+
+prj[project_number=="中山直英",
+    `:=`(project_number=NA_character_, participants="中山直英")]
+
+prj[project_number=="Philippe BOUCHET,Michel LE GALL",
+    `:=`(project_number=NA_character_, participants="Philippe BOUCHET,Michel LE GALL英")]
 
 #### Extract information from value_dt
 ships = unique(value_dt[grepl("號",LABEL_ZT), c("VALUE", "LABEL_ZT")])
@@ -173,17 +183,21 @@ region = unique(value_dt[grepl("海域",LABEL_ZT), c("VALUE", "LABEL_ZT")])
 region[VALUE=="3", VALUE:="003"]
 region = region[VALUE!="5"] %>% .[,LABEL_ZT:=trim(LABEL_ZT)]
 
-#function to find corresponding ExploreOcean vs investigate_refion
+#function to find corresponding ExploreOcean vs investigate_region
 findRegion = function(investigate_region) {
   unlist(tstrsplit(investigate_region,split=","), use.names = FALSE) %>%
     sapply(function(x){region[VALUE==as.character(x),]$LABEL_ZT[1]}, simplify = T) %>%
     unlist(use.names = F) %>% paste(collapse=",")
 }
 
-utc2localtime = function(utctime) {
-  as.POSIXct(format(force_tz(utctime,tzone= 'GMT'),tz = 'Asia/Taipei',origin ='GMT', usetz=TRUE))
+#function: convert GMT+8 to ISO8601 string
+utc2ISOstr = function(utctime) {
+  as.POSIXct(format(force_tz(utctime,tzone= 'GMT'),tz = 'Asia/Taipei',origin ='GMT', usetz=TRUE)) %>%
+  #as.POSIXct(format(utctime, tz = 'Asia/Taipei',origin ='GMT+8', usetz=TRUE)) %>%
+    strftime("%Y-%m-%dT%H:%M:%SZ")  
 }
 
+#function: remove undesired spacing within Chinese characters
 subSpacing = function(text) {
   gsub("(\\()(\\s+)(.*\\))", "\\1\\3", 
   gsub("([\U4E00-\U9FFF\U3000-\U303F\\(])(\\s+)(?=[\U4E00-\U9FFF\U3000-\U303F\\s]*\\(*[^)]*\\)*|[\U00C0-\U024F])", "\\1", text, perl=TRUE))
@@ -192,36 +206,20 @@ subSpacing = function(text) {
   ##[1] "台大(單位) (National Taiwan University)"
 }
 
+#function: add prefix of numbering (1., 2.) in front of projects
 prefixCat = function(items) { 
   sapply(seq_along(items), function(x) paste0(x, ".", items[x]), simplify = TRUE)
 }
 
-#test ExploreOcean in cruise_name
-crt = cr_dt[ispublic==1, .(id, keyed_name, cruise_name, investigate_region)]
-crt[, region:=gsub("NA", NA_character_, 
-                fifelse(is.na(investigate_region) & grepl("群島|海域|溪口|附近|南海|東海|外海|海峽|沿岸|近岸|沿海|近海|淺堆|灘|水域|峽谷|河口|小琉球|中國海|(台|臺)東|永安|南灣|東港|高雄|高屏溪|台南|澎湖|蘭嶼|綠島|左營|台灣(東|西|南|北)", cruise_name),
-                fifelse(grepl("地物|化學|元素|(洋|環|湧升)流|水團|地層|特性|懸浮|鋒面|演化|資源|現象|結構|(地|物)質|(震|遙|觀|量)測|紀錄|分(佈|布)|差異|模式|實習|測量|關係|實驗|機制|資料|分析|影響|調查|研究|評估|計(畫|劃)|生物|描述|過程|作用|變化|環境|蟲|浮游|沈積|生態|重金屬", 
-                              cruise_name), #, perl=TRUE)
-                  NA_character_,
-                  gsub("\\((.*)\\)|KEEP-II|KEEP|WOCE|探測|黑潮(分支|蛇行)|之態|水文", "", gsub("臺灣","台灣", trim(cruise_name)))),
-                  findRegion(investigate_region))), by=.(id)]
-
-prj = project[!is.na(cr_rid),.(cr_rid, projects, pi, participants, project_number, institute)] %>%
-  .[,pid:= rowid(cr_rid)] %>% setkey(cr_rid)
-
-prj[project_number=="陳韋仁、魏志潾、李欣、董木華、許凌藍、梁卓景、湯淨、黃健豪、吳凱盈",
-    `:=`(project_number=NA_character_, participants="陳韋仁、魏志潾、李欣、董木華、許凌藍、梁卓景、湯淨、黃健豪、吳凱盈")]
-
-prj[project_number=="陳天任、徐佳瑜、徐彥承",
-    `:=`(project_number=NA_character_, participants="陳天任、徐佳瑜、徐彥承")]
-
-prj[project_number=="中山直英",
-    `:=`(project_number=NA_character_, participants="中山直英")]
-
-prj[project_number=="Philippe BOUCHET,Michel LE GALL",
-    `:=`(project_number=NA_character_, participants="Philippe BOUCHET,Michel LE GALL英")]
-
-#which(is.na(prj$participants) | prj$participants=="" | prj$participants=="NA")
+#Just a test ExploreOcean in cruise_name
+#crt = cr_dt[ispublic==1, .(id, keyed_name, cruise_name, investigate_region)]
+#crt[, region:=gsub("NA", NA_character_, 
+#                fifelse(is.na(investigate_region) & grepl("群島|海域|溪口|附近|南海|東海|外海|海峽|沿岸|近岸|沿海|近海|淺堆|灘|水域|峽谷|河口|小琉球|中國海|(台|臺)東|永安|南灣|東港|高雄|高屏溪|台南|澎湖|蘭嶼|綠島|左營|台灣(東|西|南|北)", cruise_name),
+#                fifelse(grepl("地物|化學|元素|(洋|環|湧升)流|水團|地層|特性|懸浮|鋒面|演化|資源|現象|結構|(地|物)質|(震|遙|觀|量)測|紀錄|分(佈|布)|差異|模式|實習|測量|關係|實驗|機制|資料|分析|影響|調查|研究|評估|計(畫|劃)|生物|描述|過程|作用|變化|環境|蟲|浮游|沈積|生態|重金屬", 
+#                              cruise_name), #, perl=TRUE)
+#                  NA_character_,
+#                  gsub("\\((.*)\\)|KEEP-II|KEEP|WOCE|探測|黑潮(分支|蛇行)|之態|水文", "", gsub("臺灣","台灣", trim(cruise_name)))),
+#                  findRegion(investigate_region))), by=.(id)]
 
 prjx = prj[,#`:=`(proj=paste0(paste0(pid,"."),gsub("1\\.", "", projects), fifelse(is.na(project_number) | project_number=="" | project_number=="NA",
             #                               "", paste0("(", project_number, ")"))) %>%
@@ -238,8 +236,7 @@ prjx = prj[,#`:=`(proj=paste0(paste0(pid,"."),gsub("1\\.", "", projects), fifels
   .[, .(planname=fifelse(all(is.na(proj)), NA_character_, paste(prefixCat(unique(proj)), collapse="。")),
         participants=paste(people, collapse="。")), by=.(cr_rid)]
 
-#CruiseBasicData
-
+####CSR: CruiseBasicData
 cr_basic= merge(cr_dt[ispublic==1,],
                 prjx[,.(cr_rid, planname, participants)] %>% setnames(1,"id"),
                 by="id",all.x=T)%>% 
@@ -256,8 +253,8 @@ cr_basic= merge(cr_dt[ispublic==1,],
         FarestDistance=as.integer(miles_from_shore_n_miles),
         TotalDistance=as.integer(cruise_distance_nautical_miles),
         FuelConsumption=NA_integer_,
-        StartDate=utc2localtime(departure_date),
-        EndDate=utc2localtime(return_date),
+        StartDate=utc2ISOstr(departure_date),
+        EndDate=utc2ISOstr(return_date),
         StartPort=ports[VALUE==as.integer(departure_port),]$LABEL_ZT[1],
         EndPort=ports[VALUE==as.integer(arrival_port),]$LABEL_ZT[1],
         DurationDays=cruise_days,
@@ -275,36 +272,121 @@ cr_basic= merge(cr_dt[ispublic==1,],
         Remark=remark
   ),by=.(id, ShipName)]
 
+#### CSR: CruiseData
+#<CruiseData>
+#  <Item>都普勒流剖儀ADCP 75-kHz</Item>
+#  <CollectionNum>1</CollectionNum>
+#  <CollectionOwner>樣品持有人1</CollectionOwner>
+#  <ReasonChecked>0</ReasonChecked>
+#  <Reason> </Reason>
+#  <Item>單音束測深儀EK-80</Item>
+# ....
+#<Physical>
+#<Equipment>CTD</Equipment>
+#  <Summary1>1</Summary1>
+#  <Summary2>1</Summary2>
+#  <DataOwner>物理1</DataOwner>
+#  <Equipment>Drifter</Equipment>
+# ....
+#<Biogeochemical>, <Biology>, <Geology>, <Geophysics>, <Atmosphere>, <Other>
 
-##
-# Recursively unbox all lists with only one item
-recursive_unbox <- function(x) {
-  if (is.list(x)) {
-    if (length(x) == 1) {
-      x <- unbox(x)
-    } else {
-      x <- lapply(x, recursive_unbox)
-    }
+# first define the mapping dictionary
+work_details_dict <- c("化" = "Biogeochemical",
+                       "船" = "CruiseData",
+                       "物" = "Physical",
+                       "地" = "Geology",
+                       "未分類" = "Other",
+                       "生" = "Biology")
+
+# Create a function to parse `work_details`
+parse_work_details <- function(work_details, works, work_id) {
+  # Split the work_details string
+  if (is.na(work_details) || trimws(work_details)=="" || work_details=="NA") {
+    return(list(field = NA_character_, equipment = NA_character_, summary2 = NA_character_))
   }
-  x
+  splits <- unlist(tstrsplit(work_details, split = "(\\(\\s*|\\)\\s*)"))
+  splits=splits[splits!=""]
+  if (length(splits) != 4) {
+    if (length(splits) == 5) {
+      equipment <- trimws(paste0(splits[3], splits[4]))
+      summary2 <- trimws(splits[5])
+    } else if (length(splits) == 3) {
+      equipment <- NA_character_
+      summary2 <- trimws(splits[3])
+    } else {
+      print(paste("Error split length:", work_details, work_id, sep=" - "))
+    }
+  } else {
+    equipment <- trimws(splits[3])
+    summary2 <- trimws(splits[4])
+  }
+  # Extract the components
+  work_term <- trimws(splits[1])
+  if (works != work_term) {
+    print(paste("Error matching works: ", work_term, works, work_details, work_id, sep=" - "))
+  }
+  field_symbol <- trimws(splits[2])
+  field <- work_details_dict[field_symbol]
+  
+  ### some special case, maually edit it ####
+  equipment <- gsub("CTD\\s*採水", "CTD", equipment)
+  
+  return(list(field = field, equipment = equipment, summary2 = summary2))
 }
+
+# Apply the function to `work_dt` to create `fields_dt`
+fields_dt <- copy(work) %>% .[, c("Field", "Equipment", "Summary2") := parse_work_details(work_details, works, work_id), by=.(cr_rid, work_id, works)]
+fields_dt[, `:=`(Summary1 = quantity, DataOwner = gsub("、$","", trimws(owner_of_samples)))]
+fields_dt <- fields_dt[,.(cr_rid, work_id, works, Field, Equipment, Summary1, Summary2, DataOwner, remark)] %>%
+  setnames(1,"id")
+
+# Create a new column 'work_remark' that combines 'works' and 'remark'
+work_remark = fields_dt[,.(id, works, remark)] %>%
+  .[!is.na(remark) & remark!="" & remark!="NA",] %>%
+  .[, .(work_remark=paste(paste0(works, ":", remark),collapse=";")), by=(id)]
+
+####CSR: Participants
+prjy = prj[,.(participants=subSpacing(participants)), by=.(cr_rid, pid, institute)] %>%
+  setnames(1,"id")
 
 #cr_basis correspond to project
 setkey(cr_basic, id)
-prjy = prj[,.(participants=subSpacing(participants)), by=.(cr_rid, pid, institute)] %>%
-  setnames(1,"id")
 setkey(prjy, id)
+setkey(work_remark, id)
+crprj = #merge(cr_basic, prjy, by="id", all.x=TRUE) %>% #it cause duplicated id in crprj
+  merge(cr_basic, work_remark, by="id", all.x=TRUE) %>%
+  .[,`:=`(Remark=paste0(fifelse(is.na(Remark) | Remark=="" | Remark=="NA", "", Remark),
+                        fifelse(is.na(work_remark), "", paste0("(", work_remark,")")))), by=.(id)]
+crprj[,`:=`(work_remark=NULL)]
+fields_dt[,`:=`(remark=NULL)]
+
 crprj = merge(cr_basic, prjy, by="id", all.x=TRUE)
+setkey(crprj, id)
 
-crprj_list <- split(crprj[1:15,], by = "id", keep.by = FALSE)
+chcols = names(crprj)[sapply(crprj, is.character)]
+for (j in chcols)
+  set(crprj,which(is.na(crprj[[j]])),j,"")
 
-tt1 <- lapply(crprj_list, function(dt) {
+crprj_list <- split(crprj, by = "id", keep.by = FALSE)
+crprj_list <- lapply(crprj_list, function(dt) {
   list(
     CruiseBasicData = list(
       ShipName = dt$ShipName[1],
       CruiseID = dt$CruiseID[1],
       LeaderName = dt$LeaderName[1],
-      ExploreOcean = dt$ExploreOcean[1]
+      ExploreOcean = dt$ExploreOcean[1],
+      FarestDistance = dt$FarestDistance[1],
+      TotalDistance = dt$TotalDistance[1],
+      FuelConsumption = "",
+      StartDate = dt$StartDate[1],
+      EndDate = dt$EndDate[1],
+      StartPort = dt$StartPort[1],
+      EndPort = dt$EndPort[1],
+      DurationDays = dt$DurationDays[1],
+      DurationHours = dt$DurationHours[1],
+      PlanName = dt$PlanName[1],
+      Technician = dt$Technician[1],
+      Remark = dt$Remark[1]
     ),
     Participants = list(
       Department = dt$institute,
@@ -313,11 +395,150 @@ tt1 <- lapply(crprj_list, function(dt) {
   )
 })
 
-tt1 <- unname(tt1)
-combined_list <- lapply(tt1, recursive_unbox)
+# Each Fields 
+# Get all unique fields
+unique_fields <- unique(fields_dt$Field)
+
+# Create a list to hold data.tables
+field_dts <- list()
+
+# Loop over each unique field
+for (field in unique_fields) {
+  # Filter rows with this field
+  field_dt <- fields_dt[Field == field]
+  
+  # Aggregate rows by id
+  #field_dt <- field_dt[, lapply(.SD, function(x) list(unique(na.omit(x)))), by = id]
+  #field_dt <- field_dt[, lapply(.SD, function(x, y) {
+  #  if (y == "Field") {
+  #    list(unique(na.omit(x)))
+  #  } else {
+  #    list(x)
+  #  }
+  #}, y = names(.SD)), by = id]
+  field_dt <- field_dt[, lapply(.SD, function(x) list(x)), by = .(id, Field)]
+  
+  # Store the result in the list
+  chcols = names(field_dt)[sapply(field_dt, is.character)]
+  for (j in chcols)
+    set(field_dt,which(is.na(field_dt[[j]])),j,"")
+  
+  field_dts[[field]] <- field_dt
+}
+
+# Bind all the field data.tables vertically
+nested_fields <- rbindlist(field_dts, idcol = 'Field')
+
+# Remove duplicated 'Field' column
+setnames(nested_fields, 1, "dup_field")
+nested_fields[,c("dup_field"):=list(NULL)]
+
+# Set key on 'id'
+setkey(nested_fields, id)
+result <- merge(crprj, prjy, by="id", all.x=TRUE) %>%
+  merge(nested_fields, by="id", all.x=TRUE)
+
+#### Output as JSON, prepare importing to MongoDB
+# function: Recursively unbox all lists with only one item
+#recursive_unbox <- function(x) {
+#  if (is.list(x)) {
+#    if (length(x) == 1) {
+#      x <- unbox(x)
+#    } else {
+#      x <- lapply(x, recursive_unbox)
+#    }
+#  }
+#  x
+#}
+#recursive_unbox <- function(x) { #cause double/nested array if it's a multi-element array
+#  if (is.recursive(x)) {
+#    lapply(x, recursive_unbox)
+#  } else if (length(x) == 1) {
+#    jsonlite::unbox(x)
+#  } else {
+#    x
+#  }
+#}
+
+recursive_unbox <- function(x, unbox_leaf_arr=FALSE) {
+  if(is.list(x) && length(x) == 1 && !is.data.frame(x)) {
+    return(recursive_unbox(x[[1]], unbox_leaf_arr=unbox_leaf_arr))
+  } else if(is.list(x)) {
+    #print(paste(names(x), collapse=","))
+    if (names(x)[1] == "CruiseBasicData") {
+      return(mapply(recursive_unbox, x, as.list(c(TRUE, rep(FALSE, length(x)-1)))))
+    }
+    return(lapply(x, recursive_unbox, unbox_leaf_arr=unbox_leaf_arr))
+  } else if (length(x) == 1) {
+    if (unbox_leaf_arr) return(jsonlite::unbox(x))
+    return(x)
+  } else {
+    x
+  }
+}
+
+# Transform nested_fields data.table to list
+fields_list <- split(nested_fields, by = "id", keep.by = FALSE)
+fields_list <- lapply(fields_list, function(dt) {
+  setNames(
+    lapply(unique(dt$Field), function(field) {
+      sub_dt <- dt[Field == field]
+      if (field=='CruiseData') {
+        list(
+          Item = sub_dt$Equipment,
+          CollectionNum = sub_dt$Summary1,
+          CollectionOwner = sub_dt$DataOwner,
+          ReasonChecked = rep(0, length(tstrsplit(sub_dt$DataOwner,","))),
+          Reason = rep("", length(tstrsplit(sub_dt$DataOwner,",")))
+        )
+      } else {
+        list(
+          Equipment = sub_dt$Equipment,
+          Summary1 = sub_dt$Summary1,
+          Summary2 = sub_dt$Summary2,
+          DataOwner = sub_dt$DataOwner
+        )
+      } 
+    }),
+    unique(dt$Field)
+  )
+})
+
+# Combine crprj_list and fields_list
+# combined_list <- mapply(c, crprj_list, fields_list, SIMPLIFY = FALSE)
+# cause warning: In mapply(c, ..: longer argument not a multiple of length of shorter" 
+# it caused from different id in crprj (from cr_basic) and fields_dt (from project)
+# tt = which(!crprj$id %in% fields_dt$id); length(tt) #[1] 1570 
+# tt1= which(!fields_dt$id %in% crprj$id); length(tt1)#[1] 94
+# Create an empty template for fields as aboving empty_template
+empty_template <- list()
+
+# Extend fields_list to include all ids from crprj_list
+extended_fields_list <- lapply(names(crprj_list), function(id) {
+  if (id %in% names(fields_list)) {
+    return(fields_list[[id]])
+  } else {
+    return(empty_template)
+  }
+})
+
+names(extended_fields_list) <- names(crprj_list)  # Assign names
+
+# Combine crprj_list and extended_fields_list
+combined_list <- mapply(c, crprj_list, extended_fields_list, SIMPLIFY = FALSE)
+
+# Unname the list to remove keys
+combined_list <- unname(combined_list)
+
+# Apply recursive unboxing
+combined_list <- lapply(combined_list, recursive_unbox)
 
 # Convert list to JSON
-js1 <- toJSON(combined_list, pretty = TRUE, auto_unbox = TRUE)
+js1 <- toJSON(combined_list, pretty = TRUE)
+
+# data check #combined_list[[3]]
+# result[ShipName=="OR3" & CruiseID=="0919"] #original
+# toJSON(combined_list[[3]], pretty = TRUE)  #stored JSONs
 #=====================================================================
 
 ## Freees driver of MS SQL server
