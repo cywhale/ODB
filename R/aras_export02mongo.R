@@ -298,11 +298,21 @@ work_details_dict <- c("化" = "Biogeochemical",
                        "未分類" = "Other",
                        "生" = "Biology")
 
+# SBP (sub-bottom profiler) = Chirp Sonar 
+# OR1 < 951(不含) 寫 底質剖面儀 Bathy2000
+# OR1 >=951(含) 寫 底質剖面儀 Bathy2010
+# cr_basic[ShipName=="OR1" & CruiseID=="0951",]
+# StartDate: 2010-12-14T10:00:00Z
+crwork <- merge(work[,.(cr_rid, work_id, works, remark, work_details, quantity, owner_of_samples)] %>%
+                  setnames(1,"id"),
+                cr_basic[,.(id, ShipName, CruiseID, StartDate)], by="id", all.x=TRUE)
+
 # Create a function to parse `work_details`
-parse_work_details <- function(work_details, works, work_id) {
+parse_work_details <- function(work_details, works, work_id, remark, ShipName, StartDate, item_base_date) {
   # Split the work_details string
   if (is.na(work_details) || trimws(work_details)=="" || work_details=="NA") {
-    return(list(field = NA_character_, equipment = NA_character_, summary2 = NA_character_))
+   #return(list(field = NA_character_, equipment = NA_character_, summary2 = NA_character_))
+    return(list(field = "", equipment = "", summary2 = ""))
   }
   splits <- unlist(tstrsplit(work_details, split = "(\\(\\s*|\\)\\s*)"))
   splits=splits[splits!=""]
@@ -311,8 +321,8 @@ parse_work_details <- function(work_details, works, work_id) {
       equipment <- trimws(paste0(splits[3], splits[4]))
       summary2 <- trimws(splits[5])
     } else if (length(splits) == 3) {
-      equipment <- NA_character_
-      summary2 <- trimws(splits[3])
+      equipment <- trimws(splits[3]) #"S999(船)其他"
+      summary2 <- ""
     } else {
       print(paste("Error split length:", work_details, work_id, sep=" - "))
     }
@@ -329,16 +339,62 @@ parse_work_details <- function(work_details, works, work_id) {
   field <- work_details_dict[field_symbol]
   
   ### some special case, maually edit it ####
+  #print(paste0("Test crwork: ", ShipName, StartDate, item_base_date, remark))
   equipment <- gsub("CTD\\s*採水", "CTD", equipment)
+  if (grepl("ADCP", equipment) & as.character(works)=='S001') {
+    equipment = "都普勒流剖儀ADCP"
+  } else if (grepl("EK500", equipment) & as.character(works)=='S002') {
+    equipment = "單音束測深儀EK-500"
+  } else if (grepl("EK60", equipment) & as.character(works)=='S004') {
+    if (grepl("EK\\-*80", remark)) {
+      equipment = "單音束測深儀EK-80"
+    } else {
+      equipment = "單音束測深儀EK-60"
+    }
+  } else if (grepl("EA640", equipment) & as.character(works)=='S005') {
+    equipment = "單音束測深儀EA-640"
+  } else if (grepl("Chirp", equipment) & as.character(works)=='G007') {
+    field = "CruiseData"
+    if (!is.na(ShipName) & !is.na(StartDate) & as.character(ShipName) == 'OR1') {
+      if (StartDate >= item_base_date) {
+        equipment = "底質剖面儀Bathy2010"
+      } else {
+        equipment = "底質剖面儀Bathy2000"
+      }
+    } else {
+      equipment = "底質剖面儀"
+    }
+  } else if (as.character(works)=='G016') {
+    field = "CruiseData"
+    if (grepl("多音束", equipment) & grepl("304", remark)) {
+      equipment = "多音束測深儀EM304"
+    } else if (grepl("多音束", equipment) & grepl("712", remark)) {
+      equipment = "多音束測深儀EM712"
+    } else if (grepl("多音束", equipment) & grepl("2040", remark)) {
+      equipment = "多音束測深儀EM2040"
+    } else {
+      equipment = "多音束測深儀"
+    }
+  } else if (grepl("OBS", equipment) & as.character(works)=='G014') {
+    equipment = "海底地震儀OBS"  
+  }  
   
   return(list(field = field, equipment = equipment, summary2 = summary2))
 }
 
 # Apply the function to `work_dt` to create `fields_dt`
-fields_dt <- copy(work) %>% .[, c("Field", "Equipment", "Summary2") := parse_work_details(work_details, works, work_id), by=.(cr_rid, work_id, works)]
+fields_dt <- copy(crwork) %>% 
+  .[, c("Field", "Equipment", "Summary2") :=
+      parse_work_details(work_details, works, work_id, remark, ShipName, StartDate,
+                         item_base_date=crwork[ShipName=="OR1" & CruiseID=="0951",]$StartDate[1]),
+                         by=.(id, work_id, works)]
 fields_dt[, `:=`(Summary1 = quantity, DataOwner = gsub("、$","", trimws(owner_of_samples)))]
-fields_dt <- fields_dt[,.(cr_rid, work_id, works, Field, Equipment, Summary1, Summary2, DataOwner, remark)] %>%
-  setnames(1,"id")
+fields_dt <- fields_dt[,.(id, work_id, works, Field, Equipment, Summary1, Summary2, DataOwner, remark)]
+
+chcols = names(fields_dt)[sapply(fields_dt, is.character)]
+for (j in chcols)
+  set(fields_dt,which(is.na(fields_dt[[j]])),j,"")
+
 
 # Create a new column 'work_remark' that combines 'works' and 'remark'
 work_remark = fields_dt[,.(id, works, remark)] %>%
@@ -353,14 +409,13 @@ prjy = prj[,.(participants=subSpacing(participants)), by=.(cr_rid, pid, institut
 setkey(cr_basic, id)
 setkey(prjy, id)
 setkey(work_remark, id)
-crprj = #merge(cr_basic, prjy, by="id", all.x=TRUE) %>% #it cause duplicated id in crprj
-  merge(cr_basic, work_remark, by="id", all.x=TRUE) %>%
+crprj = merge(cr_basic, work_remark, by="id", all.x=TRUE) %>%
   .[,`:=`(Remark=paste0(fifelse(is.na(Remark) | Remark=="" | Remark=="NA", "", Remark),
                         fifelse(is.na(work_remark), "", paste0("(", work_remark,")")))), by=.(id)]
 crprj[,`:=`(work_remark=NULL)]
 fields_dt[,`:=`(remark=NULL)]
 
-crprj = merge(cr_basic, prjy, by="id", all.x=TRUE)
+crprj = merge(crprj, prjy, by="id", all.x=TRUE)
 setkey(crprj, id)
 
 chcols = names(crprj)[sapply(crprj, is.character)]
@@ -419,9 +474,9 @@ for (field in unique_fields) {
   field_dt <- field_dt[, lapply(.SD, function(x) list(x)), by = .(id, Field)]
   
   # Store the result in the list
-  chcols = names(field_dt)[sapply(field_dt, is.character)]
-  for (j in chcols)
-    set(field_dt,which(is.na(field_dt[[j]])),j,"")
+  #chcols = names(field_dt)[sapply(field_dt, is.character)]
+  #for (j in chcols)
+  #  set(field_dt,which(is.na(field_dt[[j]])),j,"")
   
   field_dts[[field]] <- field_dt
 }
@@ -435,7 +490,7 @@ nested_fields[,c("dup_field"):=list(NULL)]
 
 # Set key on 'id'
 setkey(nested_fields, id)
-result <- merge(crprj, prjy, by="id", all.x=TRUE) %>%
+result <- merge(crprj, prjx %>% setnames(1, "id"), by="id", all.x=TRUE) %>%
   merge(nested_fields, by="id", all.x=TRUE)
 
 #### Output as JSON, prepare importing to MongoDB
@@ -470,7 +525,12 @@ recursive_unbox <- function(x, unbox_leaf_arr=FALSE) {
     }
     return(lapply(x, recursive_unbox, unbox_leaf_arr=unbox_leaf_arr))
   } else if (length(x) == 1) {
-    if (unbox_leaf_arr) return(jsonlite::unbox(x))
+    if (unbox_leaf_arr) {
+      if (is.na(x[[1]])) {
+        return(jsonlite::unbox(NA))
+      } 
+      return(jsonlite::unbox(x))
+    }
     return(x)
   } else {
     x
@@ -539,6 +599,12 @@ js1 <- toJSON(combined_list, pretty = TRUE)
 # data check #combined_list[[3]]
 # result[ShipName=="OR3" & CruiseID=="0919"] #original
 # toJSON(combined_list[[3]], pretty = TRUE)  #stored JSONs
+matching_indices <- which(unlist(lapply(combined_list, function(x) {
+  x$CruiseBasicData$ShipName[[1]] == "OR1" & x$CruiseBasicData$CruiseID[[1]] == "0951"
+})), useNames = F) #4627
+# toJSON(combined_list[[4627]], pretty = TRUE)
+# toJSON(combined_list[[6018]], pretty = TRUE)
+# toJSON(combined_list[[2800]], pretty = TRUE) #OR3 1773
 #=====================================================================
 
 ## Freees driver of MS SQL server
