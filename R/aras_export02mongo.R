@@ -5,6 +5,7 @@ library(RODBC)
 library(magrittr)
 library(lubridate)
 library(jsonlite)
+library(stringi)
 
 setwd(here::here("ODB/R"))
 
@@ -86,6 +87,9 @@ survey = surv_dt %>% setnames(1:dim(surv_dt)[2],tolower(colnames(surv_dt))) %>%
 numcols <- c("bottom_depth","lower_depth","air_temperature","wind_speed")
 for (j in numcols) set(survey,j=j,value=as.numeric(trim(survey[[j]])))
 
+#峯 cannot shown
+work_dt[grepl("許瑞(\\?|\u5CEF|<U\\+5CEF>)",OWNER_OF_SAMPLES), OWNER_OF_SAMPLES:=gsub("許瑞(\\?|\u5CEF|<U\\+5CEF>)","許瑞峰", OWNER_OF_SAMPLES)]
+
 work = work_dt %>% setnames(1:dim(work_dt)[2],tolower(colnames(work_dt))) %>%
   .[,c(1:6,9,13,28,32),with=F] %>% setnames(c(1,9),c("work_rid","cr_rid"))  %>%
   .[,work_id:=seq_len(nrow(.))] %>% .[,c("work_id",colnames(.)[1:(dim(.)[2]-1)]),with=F] %>%
@@ -117,13 +121,15 @@ cr_info = merge(cruise[,.(cr_aras_id,departure_date,return_date,ispublic,uploade
 
 #### manual fix typo
 # cr_dt["?大杰" %in% investigators,]
-cr_dt[grepl("?大杰",investigators), investigators:=gsub("\\?大杰", "溫大杰", investigators)]
+cr_dt[grepl("(\\?|\u6E29|<U\\+6E29>)大杰",investigators), investigators:=gsub("(\\?|\u6E29|<U\\+6E29>)大杰", "溫大杰", investigators)]
+cr_dt[grepl("(\\?|\u6E29|<U\\+6E29>)良碩",director), director:=gsub("(\\?|\u6E29|<U\\+6E29>)良碩", "溫良碩", director)]
+cr_dt[grepl("(\\?|\u6E29|<U\\+6E29>)良碩",marinework_committee), marinework_committee:=gsub("(\\?|\u6E29|<U\\+6E29>)良碩", "溫良碩", marinework_committee)]
 cr_dt[grepl("葉?田",investigators), investigators:=gsub("葉\\?田", "葉啟田", investigators)]
-cr_dt[grepl("江秉?",investigators), investigators:=gsub("江秉\\?","江秉峵", investigators)]
-cr_dt[grepl("邱瑞?",primary_investigator), primary_investigator:=gsub("邱瑞\\?","邱瑞焜", primary_investigator)]
-cr_dt[grepl("許瑞?",primary_investigator), primary_investigator:=gsub("許瑞\\?","許瑞峯", primary_investigator)]
-cr_dt[grepl("沒有資料",primary_investigator), primary_investigator:=NA_character_]
-cr_dt[grepl("台灣西南海域中鋼爐石海?區", cruise_name), cruise_name:="台灣西南海域中鋼爐石海抛區"]
+cr_dt[grepl("江秉\\?",investigators), investigators:=gsub("江秉\\?","江秉峵", investigators)]
+cr_dt[grepl("邱瑞\\?",primary_investigator), primary_investigator:=gsub("邱瑞\\?","邱瑞焜", primary_investigator)]
+cr_dt[grepl("許瑞(\\?|\u5CEF|<U\\+5CEF>)",primary_investigator), primary_investigator:=gsub("許瑞(\\?|\u5CEF|<U\\+5CEF>)","許瑞峰", primary_investigator)]
+cr_dt[grepl("沒有資料",primary_investigator), primary_investigator:="NA"]
+cr_dt[grepl("台灣西南海域中鋼爐石海\\?區", cruise_name), cruise_name:="台灣西南海域中鋼爐石海抛區"]
 
 #### fix typo in project
 prj = project[!is.na(cr_rid),.(cr_rid, projects, pi, participants, project_number, institute)] %>%
@@ -303,10 +309,104 @@ work_details_dict <- c("化" = "Biogeochemical",
 # OR1 >=951(含) 寫 底質剖面儀 Bathy2010
 # cr_basic[ShipName=="OR1" & CruiseID=="0951",]
 # StartDate: 2010-12-14T10:00:00Z
+
+# work_equip original file from D:\ODB\cruise\工作項目.xlsx
+work_equip = fread("./aras_work_equip.csv", encoding="UTF-8")
+
 crwork <- merge(work[,.(cr_rid, work_id, works, remark, work_details, quantity, owner_of_samples)] %>%
                   setnames(1,"id"),
                 cr_basic[,.(id, ShipName, CruiseID, StartDate)], by="id", all.x=TRUE)
 
+# Correspond to a equip1,equip2,.. string to work_equip csv and return its fullname
+get_equip <- function(equip_str, str_out=TRUE) {
+  equipt <-  unlist(tstrsplit(equip_str, split=",|&|\\+")) %>% 
+    unique() %>%
+    sapply(function(x) { #make LISST100 can match LISST-100
+      rowx = work_equip[tolower(gsub("-|\\s","",shortname))==tolower(gsub("-|\\s","",x)),] 
+      if (grepl("無(汙|污)染", x)) {
+        rowx = work_equip[chinese_name=="無污染CTD",]
+      } else if (grepl("SAFE", x)) {
+        rowx = work_equip[grepl("SAFE", shortname),]
+      } else if (grepl("ABL", x)) {
+        rowx = work_equip[grepl("ABL", shortname),]
+      } else if (grepl("ATIS", x)) {
+        rowx = work_equip[grepl("ATIS", shortname),]
+      } else if (grepl("Micro(-)*rider", x)) {
+        rowx = work_equip[grepl("Microrider", shortname),]
+      } else if (grepl("vibr(a|o)(-|\\s)*core", tolower(x))) {
+        rowx = work_equip[grepl("Vibro Core", shortname),]
+      } else if (grepl("Current Meter", x)) {
+        rowx = work_equip[chinese_name=="海流儀",]
+      } else if (grepl("AC(-)*9", x)) {
+        rowx = work_equip[chinese_name=="分光光度計",]
+      } else if (grepl("BPR|BRP海底壓力記錄器", x)) {
+        rowx = work_equip[chinese_name=="海底壓力記錄器",]
+      } else if (x=="採泥器") {
+        rowx = work_equip[chinese_name=="採泥器",]
+      } else if (grepl("MSC採水", x)) {
+        rowx = work_equip[chinese_name=="海洋雪花瓶採水器",]
+      }  
+      #print(rowx)
+      if (nrow(rowx)) {
+        eqx = rowx[1]$chinese_name
+        if (grepl("\\|", eqx)) {
+          eqx = unlist(tstrsplit(eqx, split="\\|"))[1]
+        }
+        #print(eqx)
+        return(paste0(eqx,"(", rowx[1]$shortname,")"))
+      }
+      return(x)
+    }, simplify = TRUE, USE.NAMES = FALSE)
+  
+  if (str_out) {
+    return(trimws(paste0(equipt, collapse=",")))   
+  }
+  return(equipx)
+}
+
+get_summary2 <- function(remark, unit_pat) {
+  remark = trimws(gsub("(PS\\:|ps\\:)+(.*)$", "", remark))
+  if (grepl("站/次", unit_pat)) {
+    countx = unlist(tstrsplit(
+      gsub(",$", "", gsub("(\\d+)(站)(\\/|各)*(\\d+)(次)(\\d*)(瓶*)(.*)$", "\\1,\\4,\\6", remark)),
+      split=","))
+    if (length(countx)>=2) {
+      #summary1 = countx[1]
+      summary2 = countx[2]
+      #if (length>=3) { summary=countx[3]}
+    } else if (grepl("站", countx[1])) {
+      summary2 = "站"
+    } else {
+      summary2 = ""
+    }
+  } else if (grepl("\\/", unit_pat)) {
+    ux = unlist(tstrsplit(unit_pat, split="\\/"))
+    summary2 = unit_pat
+    for (k in ux) {
+      if (grepl(paste0("(\\d+)(?:", k, "(.*)$)"), remark)) {
+        summary2 = k
+        break
+      }
+    }
+    #if (!grepl("站", remark) &&  grepl("(\\d+)(?:時(.*)$)", remark)) {
+      #summary2 = "時"
+      #} else if (grepl("站", remark) && grepl("時", remark)) {
+      #countx = unlist(tstrsplit(
+      #  gsub(",$", "", gsub("(\\d+)(站)(\\d+)(時)(.*)$", "\\1,\\3", remark)),
+      #  split=","))
+      #summary2 = countx[2]
+    #} else {
+    #  summary2 <- unit_pat
+    #}
+  } else {  
+    summary2 <- unit_pat
+  }
+  return (summary2)
+}
+
+# test: tt = unique(crwork[grepl("999", works), .(ShipName, CruiseID, works, work_details, remark, quantity)])
+# unique(tt$remark)
+# unique(crwork$work_details)
 # Create a function to parse `work_details`
 parse_work_details <- function(work_details, works, work_id, remark, ShipName, StartDate, item_base_date) {
   # Split the work_details string
@@ -316,20 +416,15 @@ parse_work_details <- function(work_details, works, work_id, remark, ShipName, S
   }
   splits <- unlist(tstrsplit(work_details, split = "(\\(\\s*|\\)\\s*)"))
   splits=splits[splits!=""]
-  if (length(splits) != 4) {
-    if (length(splits) == 5) {
-      equipment <- trimws(paste0(splits[3], splits[4]))
-      summary2 <- trimws(splits[5])
-    } else if (length(splits) == 3) {
-      equipment <- trimws(splits[3]) #"S999(船)其他"
-      summary2 <- ""
-    } else {
-      print(paste("Error split length:", work_details, work_id, sep=" - "))
-    }
-  } else {
-    equipment <- trimws(splits[3])
-    summary2 <- trimws(splits[4])
-  }
+  #unitx = "(區|次|站|浬|條(?:測線)?|(小*)時|分|天|頻道|瓶|測線|(?<=\\d)尾|組|(km|KM|Km|公里)|個)"
+  #(?<=\\d) need digits in front, but not match digits, only match 尾 need perl
+  #> gsub('(?<=\\d)尾', '', '20尾 ps: 船尾拖曳', perl=T)　
+  # [1] "20 ps: 船尾拖曳"
+  unitx = "(區|次|站|浬|條(?:測線)?|(小*)時|分|天|頻道|瓶|測線|尾|組|(km|KM|Km|公里)|個)"
+  start_pat = trimws(paste0("^",splits[1],"\\(",splits[2],"\\)"))
+  end_pat = trimws(paste0("\\(",splits[length(splits)],"\\)$"))                   
+  unit_pat = splits[length(splits)]
+  
   # Extract the components
   work_term <- trimws(splits[1])
   if (works != work_term) {
@@ -337,22 +432,114 @@ parse_work_details <- function(work_details, works, work_id, remark, ShipName, S
   }
   field_symbol <- trimws(splits[2])
   field <- work_details_dict[field_symbol]
+
+  equipment = ""
+  summary2 = ""
+  proc_flag = FALSE
+  if (length(splits) >= 4) { #example: S002(船)EK500ELAC/GPS 水深(浬) P008(物)CTD&LADCP/LADCP(站)
+    if (grepl(unitx, unit_pat)) {
+      equipment <-  
+        gsub("(\\/|&)(GPS|Trap|LADCP|抓泥器)", ",\\2",
+        trimws( #paste0(splits[3:(length(splits)-1)], collapse=" "))
+              gsub("\\s+(水深|海流|採水)$", "",gsub(end_pat,"", gsub(start_pat, "", work_details))))) %>%
+        get_equip()
+      summary2 <- get_summary2(remark, unit_pat)
+    } else {
+      print(paste0("Error: Not valid, no units in work_details: ", work_id, " details: ", work_details))
+      equipment = ""
+      summary2 = ""
+    }
+  } else if (length(splits) == 3) { #"S999(船)其他" or other 999, remark should be x站x次x條測線(x單位) 儀器 ps:其他敘述
+      equipx =  unlist(stri_split_regex(trimws(remark), "(\\s|，)+|(?<!\\()\\,(?!\\))"))
+      if (length(equipx) >= 2) {
+        # for example 1: 5站5次 MF-CTD PS:Metal Free CTD
+        check_ps = 0
+        if (length(equipx) >= 2) {
+          check_ps = grep("PS\\:|ps\\:",equipx)
+        }
+        check_unit = grep(unitx,equipx)
+        if (length(check_ps) & length(check_unit) &
+            ((check_unit[1]==1 & check_ps[1]==2) |
+             (check_unit[1]>1 & check_unit[1] >= check_ps[1]))) {
+          #e.g. remark: 1站2次大型拖網 PS:Big Trawling,生物作業
+          if (check_unit[1] == 1) {
+            equipment = gsub(paste0("[0-9]+",unitx), "", equipx[1])
+            patx1 = gsub(equipment, "", equipx[1])
+            equipment = get_equip(equipment)
+            patx = trimws(gsub("^\\/|\\/$", "", gsub('[0-9]+', '/', patx1)))
+            summary2 = get_summary2(patx1, patx)
+          } else {
+            print(paste0("Warning: No summary(unit) information with remark: ", remark))
+            equipment = get_equip(equipx[1])
+            summary2 = ""
+          }
+          proc_flag = TRUE          
+        } else if (!length(check_ps) | check_ps[1] == 1 |
+                   (length(equipx)==2) & length(check_unit)) {
+          check_ps = length(equipx) + 1
+        } else if (length(check_ps)>=2) {
+          check_ps[1] = gsub("PS\\:|ps\\:", "", check_ps[1]) #wrong ps, should be equip
+          check_ps = check_ps[2]
+        }
+        if (length(check_unit) & !proc_flag) {
+          check_equip = equipx[1:(check_ps[1]-1)][-check_unit[1]]
+          if (length(check_equip)) {
+            equipment=trimws(paste0(equipx[1:(check_ps[1]-1)][-check_unit[1]], collapse=" ")) %>%
+              get_equip()
+          } else {
+            print(paste0("Warning: No equipment information: ", work_id, " remark: ", remark))
+          }
+          patx = trimws(gsub("^\\/|\\/$", "", gsub('[0-9]+', '/', equipx[check_unit[1]])))
+          summary2 = get_summary2(equipx[check_unit[1]], patx)
+        } else if (!proc_flag) {
+          print(paste0("Warning: No summary(unit) information: ", work_id, " remark: ", remark))
+          equipment= get_equip(trimws(paste0(equipx[1:(check_ps-1)], collapse=" ")))
+        }
+      } else {
+        if (grepl("電火花|水下儀器|ROV|掃描式聲納|Transponder|ATIS|表層溫鹽儀", equipx[1])) {
+          if (grepl(unitx, equipx[1])) {
+            equipment = gsub(paste0("[0-9]+",unitx), "", equipx[1])
+            patx1 = gsub(equipment, "", equipx[1])
+            equipment = get_equip(equipment)
+            patx = trimws(gsub("^\\/|\\/$", "", gsub('[0-9]+', '/', patx1)))
+            summary2 = get_summary2(patx1, patx)
+          } else {
+            print(paste0("Warning: No summary(unit) information with remark: ", remark))
+            equipment= get_equip(equipx[1])
+          }  
+        } else if (grepl(unitx, equipx[1])) {
+          patx = trimws(gsub("^\\/|\\/$", "", gsub('[0-9]+', '/', equipx[1])))
+          summary2 = get_summary2(equipx[1], patx)
+          print(paste0("Warning: No equipment information with remark: ", remark))
+        } else {
+          print(paste0("Warning: No equipment and summary2 with remark: ", remark))
+        }
+      }
+  } else {
+      print(paste0("Error: Not valid work_details: ", work_id, " details: ", work_details))      
+  }  
+      
+  if (equipment != '') {
+    equipment <- gsub("((打撈|(佈*)放|收)(儀器|水泥塊))|觀測$|\\,接收","", equipment)
+  }
   
   ### some special case, maually edit it ####
   #print(paste0("Test crwork: ", ShipName, StartDate, item_base_date, remark))
   equipment <- gsub("CTD\\s*採水", "CTD", equipment)
-  if (grepl("ADCP", equipment) & as.character(works)=='S001') {
-    equipment = "都普勒流剖儀ADCP"
-  } else if (grepl("EK500", equipment) & as.character(works)=='S002') {
-    equipment = "單音束測深儀EK-500"
-  } else if (grepl("EK60", equipment) & as.character(works)=='S004') {
-    if (grepl("EK\\-*80", remark)) {
-      equipment = "單音束測深儀EK-80"
-    } else {
-      equipment = "單音束測深儀EK-60"
+  if ((grepl("ADCP", equipment) & as.character(works)=='S001') |
+      (equipment=='ADCP')) {
+    equipment <- gsub("((s|S)*(b|B)*-*)ADCP","都普勒流剖儀ADCP", equipment)
+  } else if ((grepl("EK500", equipment) & as.character(works)=='S002') |
+             (equipment=='魚探EK500')) {
+    equipment <- gsub("(魚探)*EK(-*)500\\s*(ELAC)*", "單音束測深儀EK-500", equipment)
+  } else if (grepl("EK", equipment) & (as.character(works)=='S004' | as.character(works)=='S006')) {
+    if (grepl("EK\\-*80", equipment)) {
+      equipment <- gsub("EK(-*)80", "單音束測深儀EK-80", equipment)
+    } else if (grepl("EK\\-*60", equipment)) {
+      equipment <- gsub("EK(-*)60", "單音束測深儀EK-60", equipment)
     }
   } else if (grepl("EA640", equipment) & as.character(works)=='S005') {
-    equipment = "單音束測深儀EA-640"
+    equipment <- gsub("EA(-*)640", "單音束測深儀EA-640", equipment)
   } else if (grepl("Chirp", equipment) & as.character(works)=='G007') {
     field = "CruiseData"
     if (!is.na(ShipName) & !is.na(StartDate) & as.character(ShipName) == 'OR1') {
@@ -376,7 +563,15 @@ parse_work_details <- function(work_details, works, work_id, remark, ShipName, S
       equipment = "多音束測深儀"
     }
   } else if (grepl("OBS", equipment) & as.character(works)=='G014') {
-    equipment = "海底地震儀OBS"  
+    equipment = "海底地震儀OBS"
+  } else if (equipment =="現場過濾" & as.character(works)=='C008') {
+    summary2 = ""
+  } else {
+    if (grepl("火花|電火|sparker",tolower(equipment))) {
+      equipment <- gsub("(電)*(火花|電火|sparker|SPARKER|Sparker)(放電|反射)*(震測)*(系統)*", "電火花震測", equipment)
+    }
+    if (equipment == "水下攝影" | equipment == "攝影機" ) { equipment = "水下攝影機" }
+    if (tolower(equipment) == "water gun") { equipment = "Water Gun" }
   }  
   
   return(list(field = field, equipment = equipment, summary2 = summary2))
@@ -388,7 +583,8 @@ fields_dt <- copy(crwork) %>%
       parse_work_details(work_details, works, work_id, remark, ShipName, StartDate,
                          item_base_date=crwork[ShipName=="OR1" & CruiseID=="0951",]$StartDate[1]),
                          by=.(id, work_id, works)]
-fields_dt[, `:=`(Summary1 = quantity, DataOwner = gsub("、$","", trimws(owner_of_samples)))]
+fields_dt[, `:=`(Summary1 = quantity, 
+                 DataOwner = gsub("、$","", trimws(owner_of_samples)))]
 fields_dt <- fields_dt[,.(id, work_id, works, Field, Equipment, Summary1, Summary2, DataOwner, remark)]
 
 chcols = names(fields_dt)[sapply(fields_dt, is.character)]
@@ -544,20 +740,40 @@ fields_list <- lapply(fields_list, function(dt) {
     lapply(unique(dt$Field), function(field) {
       sub_dt <- dt[Field == field]
       if (field=='CruiseData') {
-        list(
-          Item = sub_dt$Equipment,
-          CollectionNum = sub_dt$Summary1,
-          CollectionOwner = sub_dt$DataOwner,
-          ReasonChecked = rep(0, length(tstrsplit(sub_dt$DataOwner,","))),
-          Reason = rep("", length(tstrsplit(sub_dt$DataOwner,",")))
-        )
+        if (any(is.na(sub_dt$Summary1[[1]]))) {
+          list(
+            Item = sub_dt$Equipment,
+            #CollectionNum = rep(NULL, length(tstrsplit(sub_dt$DataOwner, ","))),
+            CollectionOwner = sub_dt$DataOwner,
+            ReasonChecked = rep(0, length(tstrsplit(sub_dt$DataOwner,","))),
+            Reason = rep("", length(tstrsplit(sub_dt$DataOwner,",")))
+          )
+        } else {
+          list(
+            Item = sub_dt$Equipment,
+            CollectionNum = sub_dt$Summary1,
+            CollectionOwner = sub_dt$DataOwner,
+            ReasonChecked = rep(0, length(tstrsplit(sub_dt$DataOwner, ","))),
+            Reason = rep("", length(tstrsplit(sub_dt$DataOwner, ",")))
+          )
+        }  
       } else {
-        list(
-          Equipment = sub_dt$Equipment,
-          Summary1 = sub_dt$Summary1,
-          Summary2 = sub_dt$Summary2,
-          DataOwner = sub_dt$DataOwner
-        )
+        if (any(is.na(sub_dt$Summary1[[1]]))) {
+          list(
+            Equipment = sub_dt$Equipment,
+            Summary1 = rep("", length(tstrsplit(sub_dt$DataOwner, ","))),
+            Summary2 = sub_dt$Summary2,
+            DataOwner = sub_dt$DataOwner
+          )
+        } else {
+          list(
+            Equipment = sub_dt$Equipment,
+            Summary1 = sub_dt$Summary1,
+            Summary2 = sub_dt$Summary2,
+            DataOwner = sub_dt$DataOwner
+          )
+          
+        }  
       } 
     }),
     unique(dt$Field)
@@ -601,8 +817,8 @@ js1 <- toJSON(combined_list, pretty = TRUE)
 # toJSON(combined_list[[3]], pretty = TRUE)  #stored JSONs
 matching_indices <- which(unlist(lapply(combined_list, function(x) {
   x$CruiseBasicData$ShipName[[1]] == "OR1" & x$CruiseBasicData$CruiseID[[1]] == "0951"
-})), useNames = F) #4627
-# toJSON(combined_list[[4627]], pretty = TRUE)
+})), useNames = F) #4534
+# toJSON(combined_list[[4534]], pretty = TRUE)
 # toJSON(combined_list[[6018]], pretty = TRUE)
 # toJSON(combined_list[[2800]], pretty = TRUE) #OR3 1773
 #=====================================================================
@@ -611,7 +827,150 @@ matching_indices <- which(unlist(lapply(combined_list, function(x) {
 close(ms_drv)
 #odbcClose(channel)
 
+#Test 
+subset_list = combined_list[1]
 
+# Convert the subset list to JSON
+subset_json = toJSON(subset_list, pretty = TRUE)
 
+# Write the subset JSON to a file
+# write(subset_json, file = "test_or2-1110.json") #cannot assign UTF-8
+# write_json(subset_list, "D:/ODB/cruise/upload_json/test_or2-1110.json") 
+# write_json(combined_list[[168]], "D:/ODB/cruise/upload_json/test_or2-2211.json") 
+write_json(combined_list, "D:/ODB/cruise/upload_json/aras20231225.json") 
 
+# test read-back
+# tt = jsonlite::fromJSON("test_or2-1110.json")
+# toJSON(tt, pretty = TRUE)
+
+#### debug
+#### check wrong list key name
+#check_list_keyname <- lapply(combined_list, function(list_item) {
+#  if ("CruiseData" %in% names(list_item) && "CollectionNum.0" %in% names(list_item$CruiseData)) {
+#    return(paste0(list_item$CruiseBasicData$ShipName, "-", list_item$CruiseBasicData$CruiseID))
+#  } else {
+#    return(NULL)
+#  }
+#})
+#invalid_results <- Filter(Negate(is.null), check_list_keyname)
+
+# Assuming combined_list is your list
+check_collection_num <- lapply(combined_list, function(list_item) {
+  if ("CruiseData" %in% names(list_item) && "CollectionNum" %in% names(list_item$CruiseData)) {
+    collection_num_first_element <- list_item$CruiseData$CollectionNum[[1]]
+    return(list(CollectionNumFirstElement = collection_num_first_element,
+                ShipName=list_item$CruiseBasicData$ShipName,
+                CruiseID=list_item$CruiseBasicData$CruiseID))
+  } else {
+    return(NULL)
+  }
+})
+
+# Filter out NULL values to get the actual results
+valid_results <- Filter(Negate(is.null), check_collection_num)
+
+# Check if any of these contain 'NA'
+contains_na <- sapply(valid_results, function(x) any(x$CollectionNumFirstElement == "NA" || is.na(x$CollectionNumFirstElement)))
+which(contains_na)
+toJSON(valid_results[[116]], pretty = TRUE)
+#116  367  378  436  838  999 1543 1749 1787 1880 2055 2392 2401 2532 3061 3529 3761
+which(unlist(lapply(combined_list, function(x) {
+  x$CruiseBasicData$ShipName[[1]] == "OR2" & x$CruiseBasicData$CruiseID[[1]] == "2211"
+})), useNames = F)
+#168
+toJSON(combined_list[[168]], pretty = TRUE)
+
+# The following would be deprecated, because X999 remark will be changed in Aras:
+# x站x次x條測線(x單位) 儀器 ps:其他敘述 (20230719)
+# ============================================= old trials (not work yet)
+# Define the input patterns to test X999 remark
+# sentences = unique(crwork[grepl("999", works), .(remark)]$remark)
+sentences <- c(
+  "儀器測試",
+  "11時TOW CAM",
+  "站，深海底拖網",
+  "4站拖網",
+  "3站GRAB",
+  "1站Grab",
+  "10站TOW CAM",
+  "浬，重力測量",
+  "時，重力",
+  "氣力揚升式人工湧升流研究",
+  "站，底棲生物拖網",
+  "站，深層拖網",
+  "條2測線水深/地磁",
+  "20浬水深/地磁",
+  "2頻道火花放電震測",
+  "856浬水深/地磁",
+  "5站拖曳式岩心採樣器",
+  "組，收儀器",
+  "浬，Hydrosweep(Swoth bathymetry)",
+  "站2次，陣列收音器",
+  "浬，多頻探測儀",
+  "站(水聽器ITC6050)",
+  "測試驗收1次",
+  "70浬Radar Wave Measurement",
+  "無污染CTD絞機(站)",
+  "跑測線(ADCP)3站",
+  "紊流儀(2站60時)",
+  "SVP 5站",
+  "拖曳式ADCP 27時",
+  "微生物採樣器 1站2次"
+)
+
+# Define the regular expression pattern
+# pattern <- "^(\\d+)?(次|站|浬|條(?:測線)?|時|分|頻道)?(?:([，,\\(]*))(.*)?(?:([，,\\)]*))(?:儀器|(?:震|探)測|測(?:量|試)|研究|驗收)?$"
+#df = data.table()
+#df[,c("pattern", "action"):=rbindlist(lapply(sentences, function(x) {
+#  if (is.na(x) | x=="") {
+#    x = ""
+#    action = ""
+#  } else {
+#    action <- regmatches(x, regexpr("(魚獲)*調查|((左|右)舷)*佈放|(建教)*計畫(.*)$|資料$|(衛星)*追蹤|(自備)*(抽水)*(\\s)*(P|p)ump(抽水)*|誘捕(.*)($|[，,:;\\s]+)|(收)*(打撈)*儀器(測試)*|(水下)*(噪音)*(震|探|量|觀)測$|測(量|試)|(測試)*驗收|施放(.*)$|(其他)*(物理)*作業|\\(*(回收|下放)\\)*|正常|(全部)*(航程)*收集|(船尾)*拖曳$|空氣懸浮微粒|固定於船邊|(水中)*(訊號)*接收|潛水(.*)$|(地形+(.*))*良好|(表層)*沉積物(.*)$|(現場)*過濾|((微)*生物)*採集|\\b(.*)(故障|聲音收集|研究)$|跑測線", x))
+#    if (length(action) > 0) {
+#      action <- trimws(action[1])
+#      x <- gsub(paste0(action, collapse = "|"), "", x)
+##      x <- gsub("^[，,:;\\s\\(]|[，,:;\\s\\)]+$", "", x)
+#    } else {
+#      action <- ''
+#    }
+#  }
+#  data.table(pattern=x, action=action)
+#}))]
+
+#pat1 = sapply(df$pattern, function(x) {
+#  gsub("重力", "重力儀", 
+#  gsub("GRAB", "Grab", 
+#  gsub("火花放電", "電火花", x)))
+#}, simplify=TRUE)
+
+#values <- sapply(actions, function(x) {
+#  value <- regmatches(x, regexpr("\\d+", x))
+#  if (length(value) > 0) {
+#    as.integer(value)
+#  } else {
+#    NA
+#  }
+#})
+
+#units <- sapply(actions, function(x) {
+#  unit <- regmatches(x, regexpr("次|站|浬|條(測線)*|時|分|頻道", x))
+#  if (length(unit) > 0) {
+#    paste0(unit, collapse = "")
+#  } else {
+#    NA
+#  }
+#})
+
+#items <- sapply(actions, function(x) {
+#  items <- regmatches(x, regexpr("(?<=，|,|\\s)(.+)$", x, perl = TRUE))
+#  if (length(items) > 0) {
+#    trimws(items)
+#  } else {
+#    NA
+#  }
+#})
+
+#df <- data.frame(Value = values, Unit = units, Items = items, stringsAsFactors = FALSE)
+#print(df)
 

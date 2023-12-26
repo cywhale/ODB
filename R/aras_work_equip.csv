@@ -1,0 +1,49 @@
+itemid,shortname,name,chinese_name
+1,ABL,Autonomous Benthic Lander,自主式海底著陸器
+2,ATIS,Abyss Twisted-pair Imaging System,深海拖曳式攝影系統
+3,AUV,Autonomous Underwater Vehicle,自主水下載具
+4,Catnet,Catnet,多層網目過濾系統
+5,CSEM,Controlled Source ElectroMagnetic Measurements,可控海域電磁源法
+6,Edgetech 3300,Edgetech 3300,淺層高解析地層剖析儀
+7,FITS,Fiberoptical Instrumentation Towed System,深海拖曳式光纖探測系統
+8,GRAB,GRAB,採泥器
+9,Hi PAP,Hi PAP,水下定位系統
+10,Hydrophone,Hydrophone,水下麥克風|水聽器
+11,HyperSAS,HyperSAS,海面高光譜儀
+12,ISP,In Situ Pump,現場過濾站
+13,LISST100,LISST100,粒徑分析儀
+14,Manta net,Manta net,蝠形網
+15,McLane Pump WTS-LV,McLane Pump WTS-LV,現場海水過濾器
+16,MEBS,Multibeam echosounder,多音束測深儀
+17,MF-CTD,Metal Free CTD,無污染CTD
+18,Microrider,Microrider,自記式紊流量測模組
+19,Minilog,Minilog,溫度記錄器
+20,MSC,Marine snow catcher,海洋雪花瓶採水器
+44,NORPAC net,North Pacific Standard Net,北太平洋標準浮游生物採集網
+21,OBH,Ocean Bottom Hydrophone,海底水聽器
+22,OPC,Optical Plankton Counter,浮游生物光學計數器
+23,RCM,Recording Current Meter,海流儀
+24,ROV,Remotely Operated Vehicle,水下遙控載具|遙測潛航器|水下遙控潛航器 
+25,SAFE T-BAR(T-BAR),SAFE T-BAR(T-BAR),觀測載具
+26,Seahorse,Seahorse,定點式海流儀
+27,SVP,Surface Velocity Program,繫纜式聲速剖面儀
+28,TM-CTD,Trace Metal CTD,微量CTD
+29,TMS,Tether Management System,纜線管理系統
+30,Tow Cam,Towed Camera System,拖曳式水下攝影系統|底拖式水下攝影機
+31,Tow Source,Tow Source,拖曳式聲源
+32,Transducer,Transducer,聲電換能器
+45,Transponder,Transponder,應答器|音波回應器
+33,Turbulence Probe,Turbulence Probe,湍流器
+34,TVG,TV-guided Grabber,視訊導引抓斗系統
+35,USBL,Ultra Short Baseline,超短基線
+36,UW350,UW350,水下低頻聲源
+37,Vane shear test,Vane shear test,十字片剪力試驗儀
+38,V-Core,Video-Guided Multi-Core,影像導引多管岩心採樣器
+39,V-Fin,V-Fin,拖曳式載具
+40,Vibro Core,Vibro Core,震動式岩心採樣器
+41,WireWalker,WireWalker,波浪動力剖面測量儀器
+42,WTS,Water Transfer System,現場海水過濾器
+43,XBT,eXpendable BathyThermograph,拋棄式溫深儀
+44,APG,Absolute seafloor Pressure Gauge,海床絕對壓力計
+45,AC-9,AC-9,分光光度計
+46,BPR,BPR,海底壓力記錄器 
