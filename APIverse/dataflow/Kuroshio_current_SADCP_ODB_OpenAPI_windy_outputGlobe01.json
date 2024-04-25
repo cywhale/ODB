@@ -1,0 +1,183 @@
+{
+  "nodes": [
+    {
+      "width": 192,
+      "height": 522,
+      "id": "Api>odb_v1_ctd_sadcp_bio_202210>_api_sadcp>1hzE",
+      "type": "customApi",
+      "position": {
+        "x": 145,
+        "y": 19
+      },
+      "data": {
+        "API": {
+          "parameters": [
+            "lon0",
+            "lon1",
+            "lat0",
+            "lat1",
+            "dep0",
+            "dep1",
+            "dep_mode",
+            "mode",
+            "format",
+            "xorder",
+            "yorder",
+            "start",
+            "end",
+            "limit",
+            "mean_threshold",
+            "append"
+          ],
+          "path": "/api/sadcp",
+          "method": "get",
+          "tags": "SADCP",
+          "description": "ODB SADCP API"
+        },
+        "name": "odb_v1_ctd_sadcp_bio_202210",
+        "title": "ODB Open API",
+        "version": "1.0.0",
+        "data_source": "Ocean Data Bank(ODB), IONTU, Taiwan",
+        "link": "https://ecodata.odb.ntu.edu.tw/api",
+        "last_updated": "2022-10-24T14:20:00+0800",
+        "host": "ecodata.odb.ntu.edu.tw",
+        "swagger": true,
+        "inputValue": [
+          "120",
+          "135",
+          "20",
+          "35",
+          "100",
+          null,
+          "mean",
+          "monsoon",
+          "uvgrid"
+        ]
+      },
+      "selected": false,
+      "positionAbsolute": {
+        "x": 145,
+        "y": 19
+      },
+      "dragging": false
+    },
+    {
+      "width": 206,
+      "height": 88,
+      "id": "Globe>node>2AVQ",
+      "type": "outputGlobe",
+      "position": {
+        "x": 461.5,
+        "y": 46
+      },
+      "data": {
+        "title": "API to Globe Viewer",
+        "url": "https://ecodata.odb.ntu.edu.tw/api/sadcp?lon0=120&lon1=135&lat0=20&lat1=35&dep0=100&dep_mode=mean&mode=monsoon&format=uvgrid&"
+      },
+      "selected": false,
+      "positionAbsolute": {
+        "x": 461.5,
+        "y": 46
+      },
+      "dragging": false
+    },
+    {
+      "id": "HidyViewer>node>2clY",
+      "type": "HidyViewer",
+      "position": {
+        "x": 465,
+        "y": 170.23749999999978
+      },
+      "data": {
+        "title": "Hidy viewer",
+        "url": "https://ecodata.odb.ntu.edu.tw/api/sadcp?lon0=120&lon1=135&lat0=20&lat1=35&dep0=100&dep_mode=mean&mode=monsoon&format=uvgrid&"
+      },
+      "width": 206,
+      "height": 88,
+      "selected": true,
+      "positionAbsolute": {
+        "x": 465,
+        "y": 170.23749999999978
+      },
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "source": "Api>odb_v1_ctd_sadcp_bio_202210>_api_sadcp>1hzE",
+      "sourceHandle": null,
+      "target": "Globe>node>2AVQ",
+      "targetHandle": null,
+      "id": "reactflow__edge-Api>odb_v1_ctd_sadcp_bio_202210>_api_sadcp>1hzE-Globe>node>2AVQ",
+      "style": {
+        "stroke": "gold",
+        "type": "arrowclosed"
+      },
+      "animated": true
+    },
+    {
+      "source": "Api>odb_v1_ctd_sadcp_bio_202210>_api_sadcp>1hzE",
+      "sourceHandle": null,
+      "target": "HidyViewer>node>2clY",
+      "targetHandle": null,
+      "id": "reactflow__edge-Api>odb_v1_ctd_sadcp_bio_202210>_api_sadcp>1hzE-HidyViewer>node>2clY",
+      "style": {
+        "stroke": "gold",
+        "type": "arrowclosed"
+      },
+      "animated": true
+    }
+  ],
+  "viewport": {
+    "x": 198,
+    "y": 12.825000000000214,
+    "zoom": 1
+  },
+  "apihandle": [
+    {
+      "url": "https://ecodata.odb.ntu.edu.tw/api/sadcp?lon0=120&lon1=135&lat0=20&lat1=35&dep0=100&dep_mode=mean&mode=monsoon&format=uvgrid&"
+    },
+    {
+      "url": "https://ecodata.odb.ntu.edu.tw/api/sadcp?lon0=120&lon1=135&lat0=20&lat1=35&dep0=100&dep_mode=mean&mode=monsoon&format=uvgrid&"
+    }
+  ],
+  "apinode": [
+    {
+      "node": "Api>odb_v1_ctd_sadcp_bio_202210>_api_sadcp>1hzE",
+      "data": {
+        "name": "odb_v1_ctd_sadcp_bio_202210",
+        "title": "ODB Open API",
+        "version": "1.0.0",
+        "data_source": "Ocean Data Bank(ODB), IONTU, Taiwan",
+        "link": "https://ecodata.odb.ntu.edu.tw/api",
+        "last_updated": "2022-10-24T14:20:00+0800",
+        "host": "ecodata.odb.ntu.edu.tw",
+        "swagger": true,
+        "API": {
+          "parameters": [
+            "lon0",
+            "lon1",
+            "lat0",
+            "lat1",
+            "dep0",
+            "dep1",
+            "dep_mode",
+            "mode",
+            "format",
+            "xorder",
+            "yorder",
+            "start",
+            "end",
+            "limit",
+            "mean_threshold",
+            "append"
+          ],
+          "path": "/api/sadcp",
+          "method": "get",
+          "tags": "SADCP",
+          "description": "ODB SADCP API"
+        }
+      }
+    }
+  ]
+}
