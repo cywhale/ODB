@@ -67,18 +67,20 @@ sudo python3 get_noaa.py --database ndbc --data cmanwx --date 2025-03
 ### Download all `.txt` metadata from `oceansites`
 
 ```bash
+# This method would fail if it uses THREDDS catalog to analyze files but those catalog.html DO NOT record the extension, e.g., .txt, you want.
 sudo python3 get_noaa.py --database ndbc --data oceansites --type txt
 ```
 
 ### Download `.asc` and `.ruv` from NDBC `hfradar` (non-THREDDS)
 
 ```bash
-sudo python3 get_noaa.py --database ndbc --data hfradar --type asc,ruv
+sudo python3 get_noaa.py --database ndbc --data hfradar
 ```
 
 ### Redownload failed files from logs (all datasets)
 
 ```bash
+# Please manually move those data_lost_filelist.log into bak_log/, for example, bak_log/data_lost_filelist_tao-buoy.log
 sudo python3 get_noaa.py --fix
 ```
 
@@ -107,7 +109,9 @@ sudo python3 get_noaa.py --fix
 │   ├── oceansites/DATA/ANTARES/oceansites_index.txt
 │   └── hfradar/radial/.../*.ruv
 └── ncei/
-    └── gocd/a0000123/gocd_a0000123_46078_202001.nc
+│   └── gocd/a0000123/gocd_a0000123_46078_202001.nc
+└── bak_log/
+│   └── data_lost_filelist_xxx.log
 ```
 
 ---
