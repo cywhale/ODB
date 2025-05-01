@@ -36,28 +36,74 @@ def parse_args():
     parser.add_argument('--date', help='Optional date in format YYYY-MM to download only one month')
     parser.add_argument('--type', help='Only download files with specific extension, e.g., txt')
     parser.add_argument('--fix', action='store_true', help='Retry download from lost file list')
+    parser.add_argument('--fallback', help='Force fallback mode and crawl from given URL')
+    parser.add_argument('--outdir', help='Specify output directory when using --fallback')
+    parser.add_argument('--dry-run', action='store_true', help='Preview download paths without downloading')
+    parser.add_argument('--force', action='store_true', help='Force overwrite existing files during any download')
     return parser.parse_args()
 
-def download_file(url, save_path):
-    if os.path.exists(save_path):
-        print(f"[SKIP] {save_path} already exists")
+def download_file(url, save_path, dry_run=False, force=False):
+    filename = os.path.basename(urlparse(url).path)
+    full_save_path = save_path if save_path.endswith(filename) else os.path.join(save_path, filename)
+
+    if os.path.isfile(full_save_path):
+        if dry_run:
+            if not force:
+                print(f"[SKIP] {full_save_path} already exists")
+                return
+            else:
+                print(f"[DRY-RUN][OVERWRITE] {full_save_path} from {url}")
+                return
+        if not force:
+            print(f"[SKIP] {full_save_path} already exists")
+            return
+        else:
+            print(f"[OVERWRITE] {full_save_path} exists but force=True")
+    elif dry_run:
+        print(f"[DRY-RUN] Would save: {full_save_path} from {url}")
         return
+
     try:
         if not os.path.exists(os.path.dirname(save_path)):
             os.makedirs(os.path.dirname(save_path))
         print(f"[DOWNLOADING] {url}")
         r = requests.get(url, headers=HEADERS, stream=True, timeout=15)
         r.raise_for_status()
-        with open(save_path, 'wb') as f:
+        with open(full_save_path, 'wb') as f:
             for chunk in r.iter_content(chunk_size=8192):
                 f.write(chunk)
-        print(f"[SAVED] {save_path}")
-    except Exception as e:
+        print(f"[SAVED] {full_save_path}")
+    except requests.exceptions.RequestException as e:
         print(f"[ERROR] Failed to download {url}: {e}")
-        with open(os.path.join(os.path.dirname(save_path), "data_lost_filelist.log"), 'a') as log_file:
+        log_path = os.path.join(os.path.dirname(save_path), "data_lost_filelist.log")
+        with open(log_path, 'a') as log_file:
             log_file.write(f"{url}\n")
 
-def crawl_http_directory(base_url, save_root, file_type_filter=None):
+def fix_lost_downloads(dry_run=False, force=False, root="/media/X/NOAA"):
+    basedir = f"{root}/bak_log"
+    path_map = load_fallback_mappings()
+    for fname in os.listdir(basedir):
+        if fname.startswith("data_lost_filelist_") and fname.endswith(".log"):
+            with open(os.path.join(basedir, fname)) as f:
+                for line in f:
+                    url = line.strip()
+                    if not url:
+                        continue
+                    matched = False
+                    for base_url in path_map:
+                        if url.startswith(base_url):
+                            relative_path = url[len(base_url):].lstrip('/')
+                            save_path = os.path.join(path_map[base_url], relative_path)
+                            download_file(url, save_path, dry_run=dry_run, force=force)
+                            matched = True
+                            break
+                    if not matched:
+                        path_after = url.split("/thredds-ocean/fileServer/")[-1]
+                        parts = path_after.split("/")     # e.g. ['ndbc','tao-buoy','2015','02','file.nc']
+                        save_dir = os.path.join(root, *parts[:-1])
+                        download_file(url, save_dir, dry_run=dry_run, force=force)
+
+def crawl_http_directory(base_url, save_root, file_type_filter=None, dry_run=False, force=False):
     try:
         r = requests.get(base_url, headers=HEADERS, timeout=10)
         r.raise_for_status()
@@ -73,38 +119,54 @@ def crawl_http_directory(base_url, save_root, file_type_filter=None):
             full_url = urljoin(base_url, href)
             if href.endswith('/'):
                 subdir = os.path.join(save_root, href.strip('/'))
-                crawl_http_directory(full_url, subdir, file_type_filter)
+                crawl_http_directory(full_url, subdir, file_type_filter, dry_run, force)
             else:
                 if file_type_filter and not any(href.endswith(ext) for ext in file_type_filter):
                     continue
-                rel_path = full_url.split('/data/oceans/')[-1]
-                save_path = os.path.join("/media/X/NOAA", rel_path)
-                download_file(full_url, save_path)
+                rel_path = os.path.relpath(full_url, start=base_url).split('?')[0]
+                save_path = os.path.join(save_root, rel_path)
+                download_file(full_url, save_path, dry_run=dry_run, force=force)
     except Exception as e:
         print(f"[ERROR] Failed to crawl {base_url}: {e}")
 
-def fix_lost_downloads():
-    basedir = "d:/backup/NOAA/bak_log" if platform.system() == "Windows" else "/media/X/NOAA/bak_log"
-    for fname in os.listdir(basedir):
-        if fname.startswith("data_lost_filelist_") and fname.endswith(".log"):
-            with open(os.path.join(basedir, fname)) as f:
-                for line in f:
-                    url = line.strip()
-                    if not url:
-                        continue
-                    parts = url.split("/thredds-ocean/fileServer/")[-1].split("/", 2)
-                    if len(parts) < 2:
-                        print(f"[WARNING] Cannot parse URL: {url}")
-                        continue
-                    database, dataset_rest = parts[0], parts[1]
-                    save_path = os.path.join("/media/X/NOAA", database, dataset_rest)
-                    download_file(url, save_path)
+def load_fallback_mappings():
+    path_map = {}
+    config_file = "/media/X/NOAA/bak_log/fix_path.txt"
+    if os.path.exists(config_file):
+        with open(config_file, 'r') as f:
+            for line in f:
+                parts = line.strip().split(',')
+                if len(parts) == 2:
+                    base, target = parts
+                    path_map[base.strip()] = target.strip()
+    return path_map
+
+def append_to_fix_path(base_url, outdir):
+    config_file = "/media/X/NOAA/bak_log/fix_path.txt"
+    new_entry = f"{base_url.rstrip('/')},{outdir.rstrip('/')}"
+    if os.path.exists(config_file):
+        with open(config_file, 'r') as f:
+            lines = {line.strip() for line in f if line.strip()}
+        if new_entry in lines:
+            return  # Prevent duplicates
+    with open(config_file, 'a') as f:
+        f.write(new_entry + "\n")
 
 def main():
     args = parse_args()
 
     if args.fix:
-        fix_lost_downloads()
+        fix_lost_downloads(dry_run=args.dry_run, force=args.force,
+                           root="d:/backup/NOAA" if platform.system() == "Windows" else "/media/X/NOAA")
+        return
+
+    if args.fallback:
+        save_root = args.outdir or (os.path.join("/media/X/NOAA", args.database) if args.database else "/media/X/NOAA")
+        file_type_filter = [f".{ext.strip()}" for ext in args.type.split(",")] if args.type else None
+        print("[INFO] Falling back to direct HTTP directory crawling mode...")
+        crawl_http_directory(args.fallback, save_root, file_type_filter, dry_run=args.dry_run, force=args.force)
+        if args.outdir:
+            append_to_fix_path(args.fallback, args.outdir)
         return
 
     database = args.database.strip("/")
@@ -126,11 +188,9 @@ def main():
     base_http_url = f"{db_info['BASE_HTTP_URL']}/{dataset}/"
 
     try:
-        # Check if catalog.html exists
         test_catalog = f"{catalog_root_url}/catalog.html"
         r = requests.head(test_catalog, timeout=5)
         r.raise_for_status()
-        # If layout is year_month, handle that way
         if layout == "year_month":
             if args.date:
                 try:
@@ -144,9 +204,8 @@ def main():
         else:
             crawl_and_download(base_fileserver_url, catalog_root_url, save_root, dataset, file_type_filter)
     except Exception:
-        # Fallback to HTML crawling mode
         print("[INFO] Falling back to direct HTTP directory crawling mode...")
-        crawl_http_directory(base_http_url, save_root, file_type_filter)
+        crawl_http_directory(base_http_url, save_root, file_type_filter, dry_run=args.dry_run)
 
 if __name__ == "__main__":
     main()
