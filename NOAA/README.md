@@ -117,6 +117,12 @@ sudo python3 get_noaa.py --fix --dry-run
 sudo python3 get_noaa.py --fallback https://... --outdir ... --dry-run
 ```
 
+### `--force`
+Force downloading to overwrite existed file in the save directory (default would skip it, not overwriting)
+```bash
+sudo python3 get_noaa.py --fix --force
+```
+
 ---
 
 ## 💡 Behavior Notes
