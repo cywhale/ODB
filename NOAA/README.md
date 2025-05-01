@@ -77,11 +77,44 @@ sudo python3 get_noaa.py --database ndbc --data oceansites --type txt
 sudo python3 get_noaa.py --database ndbc --data hfradar
 ```
 
-### Redownload failed files from logs (all datasets)
-
+### `--fallback URL` with `--outdir DIR` 
+Force the script to crawl and download from a direct HTML directory listing instead of THREDDS, and specify a custom output directory:
 ```bash
-# Please manually move those data_lost_filelist.log into bak_log/, for example, bak_log/data_lost_filelist_tao-buoy.log
-sudo python3 get_noaa.py --fix
+sudo python3 get_noaa.py --fallback https://www.ngdc.noaa.gov/hazard/data/cdroms/EQ_StrongMotion_v1/data/ --outdir /media/X/NOAA/ncei/natural-hazard/earthquakes/EQ_StrongMotion_v1
+```
+
+If `--outdir` is provided, the script will automatically append the mapping to:
+```
+/media/X/NOAA/bak_log/fix_path.txt
+```
+This ensures future `--fix` operations restore to the correct folder.
+
+### 🔄 `--fix` Mode
+
+When using `--fix`, the script attempts to re-download files listed in:
+```
+/media/X/NOAA/bak_log/data_lost_filelist_*.log
+```
+
+If `/media/X/NOAA/bak_log/fix_path.txt` exists, its mappings will override default save locations:
+```
+https://base_url_prefix/,/custom/save/path
+```
+
+Example:
+```
+https://www.ngdc.noaa.gov/thredds/fileServer/regional/,/media/X/NOAA/ncei/estuarine_bathymetry
+```
+
+This allows `--fix` to correctly restore files to their intended directories.
+
+---
+
+### `--dry-run`
+Preview all downloads without saving any files (respected across all modes including `--fix`):
+```bash
+sudo python3 get_noaa.py --fix --dry-run
+sudo python3 get_noaa.py --fallback https://... --outdir ... --dry-run
 ```
 
 ---
@@ -111,6 +144,7 @@ sudo python3 get_noaa.py --fix
 └── ncei/
 │   └── gocd/a0000123/gocd_a0000123_46078_202001.nc
 └── bak_log/
+│   ├── fix_path.txt
 │   └── data_lost_filelist_xxx.log
 ```
 
