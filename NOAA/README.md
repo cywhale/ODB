@@ -61,7 +61,8 @@ sudo python3 get_noaa.py --database ndbc --data cmanwx
 ### Download only March 2025 `.nc` files from NDBC `cmanwx`
 
 ```bash
-sudo python3 get_noaa.py --database ndbc --data cmanwx --date 2025-03
+sudo python3 get_noaa.py --database ndbc --data cmanwx 
+# --date 2025-03 # year-month mode is deprecated so that --date method can not be used anymore 
 ```
 
 ### Download all `.txt` metadata from `oceansites`
@@ -160,7 +161,7 @@ sudo python3 get_noaa.py --fix --force
 
 You can easily extend the supported datasets by:
 - Adding to `DATABASES` in the script
-- Adding new layout types to `LAYOUT_MAP` if needed (`year_month`, `nested`)
+- ~~Adding new layout types to `LAYOUT_MAP` if needed (`year_month`, `nested`)~~
 
 ---
 
