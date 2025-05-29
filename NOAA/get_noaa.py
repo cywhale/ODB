@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 from urllib.parse import urlparse, parse_qs, urljoin
 import platform
+import re
 
 DATABASES = {
     'ndbc': {
@@ -22,22 +23,17 @@ DATABASES = {
 }
 
 HEADERS = {'User-Agent': 'Mozilla/5.0'}
-'''
-LAYOUT_MAP = {
-    'cmanwx': 'year_month',
-    'co-ops': 'year_month',
-    'tao-buoy': 'year_month'
-}
-'''
+
+# Global variable to store the centralized log path
+GLOBAL_LOG_PATH = None
+# Global variable to store the minimum year filter
+MIN_YEAR = None
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Download NOAA NetCDF or ASCII data by database and dataset.")
     parser.add_argument('--database', help='Database name, e.g., ndbc, ncei')
     parser.add_argument('--data', help='Dataset name under the database')
-    '''
-    # year-month mode is deprecated, so the --date cannot be used anymore
-    parser.add_argument('--date', help='Optional date in format YYYY-MM to download only one month')
-    '''
+    parser.add_argument('--year', help='Start from this year and skip earlier years (e.g., 2007)')
     parser.add_argument('--type', help='Only download files with specific extension, e.g., txt')
     parser.add_argument('--fix', action='store_true', help='Retry download from lost file list')
     parser.add_argument('--fallback', help='Force fallback mode and crawl from given URL')
@@ -46,11 +42,15 @@ def parse_args():
     parser.add_argument('--force', action='store_true', help='Force overwrite existing files during any download')
     return parser.parse_args()
 
-def handle_error(url, save_path):
+def handle_error(url, save_path=None):
+    """Log failed file URLs to centralized log"""
+    global GLOBAL_LOG_PATH
+    if GLOBAL_LOG_PATH is None:
+        return
+    
     try:
-        log_path = os.path.join(os.path.dirname(save_path), "data_lost_filelist.log")
-        os.makedirs(os.path.dirname(save_path), exist_ok=True)
-        with open(log_path, 'a') as log_file:
+        os.makedirs(os.path.dirname(GLOBAL_LOG_PATH), exist_ok=True)
+        with open(GLOBAL_LOG_PATH, 'a') as log_file:
             log_file.write(f"{url}\n")
     except Exception as e:
         print(f"[LOGGING ERROR] Could not write to lost file list: {e}")
@@ -88,19 +88,19 @@ def download_file(url, save_path, dry_run=False, force=False):
         print(f"[SAVED] {full_save_path}")
     except requests.exceptions.Timeout as e:
         print(f"[Timeout ERROR] Failed to download {url}: {e}")
-        handle_error(url, full_save_path)
+        handle_error(url)
     except requests.exceptions.RequestException as e:
         print(f"[Request ERROR] Failed to download {url}: {e}")
-        handle_error(url, full_save_path)
+        handle_error(url)
     except Exception as e:
         print(f"[ERROR] Failed to download {url}: {e}")
-        handle_error(url, full_save_path)
+        handle_error(url)
 
 def fix_lost_downloads(dry_run=False, force=False, root="/media/X/NOAA"):
     basedir = f"{root}/bak_log"
     path_map = load_fallback_mappings()
     for fname in os.listdir(basedir):
-        if fname.startswith("data_lost_filelist_") and fname.endswith(".log"):
+        if fname.startswith("data_lost_filelist") and fname.endswith(".log"):
             with open(os.path.join(basedir, fname)) as f:
                 for line in f:
                     url = line.strip()
@@ -120,6 +120,26 @@ def fix_lost_downloads(dry_run=False, force=False, root="/media/X/NOAA"):
                         save_dir = os.path.join(root, *parts[:-1])
                         download_file(url, save_dir, dry_run=dry_run, force=force)
 
+def is_year_directory(dirname):
+    """Check if directory name is a 4-digit year"""
+    return re.match(r'^\d{4}$', dirname) is not None
+
+def should_skip_year_dir(dirname):
+    """Check if we should skip this year directory based on MIN_YEAR filter"""
+    global MIN_YEAR
+    if MIN_YEAR is None:
+        return False
+    
+    if is_year_directory(dirname):
+        try:
+            year = int(dirname)
+            if year < MIN_YEAR:
+                print(f"[SKIP YEAR] Skipping year {year} (< {MIN_YEAR})")
+                return True
+        except ValueError:
+            pass
+    return False
+
 def crawl_http_directory(base_url, save_root, file_type_filter=None, dry_run=False, force=False):
     try:
         r = requests.get(base_url, headers=HEADERS, timeout=10)
@@ -135,7 +155,13 @@ def crawl_http_directory(base_url, save_root, file_type_filter=None, dry_run=Fal
                 continue
             full_url = urljoin(base_url, href)
             if href.endswith('/'):
-                subdir = os.path.join(save_root, href.strip('/'))
+                dirname = href.strip('/')
+                
+                # Check if we should skip this year directory
+                if should_skip_year_dir(dirname):
+                    continue
+                    
+                subdir = os.path.join(save_root, dirname)
                 crawl_http_directory(full_url, subdir, file_type_filter, dry_run, force)
             else:
                 if file_type_filter and not any(href.endswith(ext) for ext in file_type_filter):
@@ -145,14 +171,8 @@ def crawl_http_directory(base_url, save_root, file_type_filter=None, dry_run=Fal
                 download_file(full_url, save_path, dry_run=dry_run, force=force)
     except Exception as e:
         print(f"[ERROR] Failed to crawl {base_url}: {e}")
-        # Log the failed directory crawl
-        log_path = os.path.join(save_root, "data_lost_filelist.log")
-        try:
-            os.makedirs(save_root, exist_ok=True)
-            with open(log_path, 'a') as log_file:
-                log_file.write(f"{base_url}\n")
-        except Exception as log_err:
-            print(f"[LOGGING ERROR] Could not write to lost log at {log_path}: {log_err}")
+        # Don't log directory crawl failures - we only want to log individual file failures
+        # The individual file download failures will be logged by download_file() -> handle_error()
 
 def load_fallback_mappings():
     path_map = {}
@@ -178,7 +198,17 @@ def append_to_fix_path(base_url, outdir):
         f.write(new_entry + "\n")
 
 def main():
+    global GLOBAL_LOG_PATH, MIN_YEAR
     args = parse_args()
+
+    # Parse year filter if provided
+    if args.year:
+        try:
+            MIN_YEAR = int(args.year)
+            print(f"[INFO] Will skip years before {MIN_YEAR}")
+        except ValueError:
+            print(f"[ERROR] Invalid year format: {args.year}. Please use 4-digit year (e.g., 2007)")
+            sys.exit(1)
 
     if args.fix:
         fix_lost_downloads(dry_run=args.dry_run, force=args.force,
@@ -187,6 +217,9 @@ def main():
 
     if args.fallback:
         outdir = args.outdir or os.path.join("/media/X/NOAA", args.database if args.database else "")
+        # Set up centralized log path for fallback mode
+        GLOBAL_LOG_PATH = os.path.join(outdir, "data_lost_filelist.log")
+        print(f"[INFO] Centralized error log will be at: {GLOBAL_LOG_PATH}")
         print("[INFO] Falling back to direct HTTP directory crawling mode...")
         crawl_http_directory(args.fallback, outdir, file_type_filter=[f".{args.type}"] if args.type else None,
                              dry_run=args.dry_run, force=args.force)
@@ -207,9 +240,12 @@ def main():
 
     savedir = "d:/backup/NOAA" if platform.system() == "Windows" else "/media/X/NOAA"
     save_root = os.path.join(savedir, database, dataset)
+    
+    # Set up centralized log path for standard mode
+    GLOBAL_LOG_PATH = os.path.join(save_root, "data_lost_filelist.log")
+    print(f"[INFO] Centralized error log will be at: {GLOBAL_LOG_PATH}")
 
     file_type_filter = [f".{ext.strip()}" for ext in args.type.split(",")] if args.type else None
-    layout = 'nested' # LAYOUT_MAP.get(dataset, "nested") #year_month is deprecated mode
 
     base_fileserver_url = f"{db_info['BASE_FILESERVER_URL']}/{dataset}"
     catalog_root_url = f"{db_info['BASE_CATALOG_URL']}/{dataset}"
@@ -219,19 +255,6 @@ def main():
         test_catalog = f"{catalog_root_url}/catalog.html"
         r = requests.head(test_catalog, timeout=5)
         r.raise_for_status()
-        '''
-        if layout == "year_month":
-            if args.date:
-                try:
-                    dt = datetime.strptime(args.date, "%Y-%m")
-                    year, month = dt.year, dt.month
-                    run_for_month(base_fileserver_url, catalog_root_url, save_root, year, month, file_type_filter)
-                except ValueError:
-                    print("[ERROR] Invalid date format. Use YYYY-MM (e.g., 2025-02)")
-            else:
-                run_all(base_fileserver_url, catalog_root_url, save_root, file_type_filter)
-        else:
-        '''
         crawl_http_directory(base_fileserver_url, save_root, file_type_filter=file_type_filter,
                              dry_run=args.dry_run, force=args.force)
     except Exception:
