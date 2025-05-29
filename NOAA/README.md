@@ -36,7 +36,7 @@ sudo /opt/noaavenv/bin/python your_script.py
 ### Basic command:
 
 ```bash
-sudo python3 get_noaa.py --database <ndbc|ncei> --data <dataset> [--date YYYY-MM] [--type ext1,ext2]
+sudo python3 get_noaa.py --database <ndbc|ncei> --data <dataset> [--year YYYY] [--type ext1,ext2]
 ```
 
 ---
@@ -58,10 +58,10 @@ sudo python3 get_noaa.py --database <ndbc|ncei> --data <dataset> [--date YYYY-MM
 sudo python3 get_noaa.py --database ndbc --data cmanwx
 ```
 
-### Download only March 2025 `.nc` files from NDBC `cmanwx`
+### Download only subdirectories which named by year >= 2020 from NDBC `cmanwx`
 
 ```bash
-sudo python3 get_noaa.py --database ndbc --data cmanwx 
+sudo python3 get_noaa.py --database ndbc --data cmanwx --year 2020
 # --date 2025-03 # year-month mode is deprecated so that --date method can not be used anymore 
 ```
 
