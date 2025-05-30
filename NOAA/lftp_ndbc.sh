@@ -1,5 +1,6 @@
 #!/bin/bash
-
+# implement commmand like:
+# lftp ftp-oceans.ncei.noaa.gov -e "mirror --only-newer --no-symlinks --parallel=4 /pub/data.nodc/ndbc/hfradar/radial/2012/201206 /media/X/NOAA/ndbc/hfradar/radial/2012/201206; quit"
 # === Usage: ./lftp_ndbc.sh 2014 ===
 YEAR="$1"
 if [[ -z "$YEAR" ]]; then
