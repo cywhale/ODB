@@ -7,7 +7,7 @@
       "type": "customApi",
       "position": {
         "x": 145,
-        "y": 19
+        "y": 24
       },
       "data": {
         "API": {
@@ -47,8 +47,8 @@
           "135",
           "20",
           "35",
+          "",
           "100",
-          null,
           "mean",
           "monsoon",
           "uvgrid"
@@ -59,7 +59,11 @@
         "x": 145,
         "y": 19
       },
-      "dragging": false
+      "dragging": false,
+      "measured": {
+        "width": 192,
+        "height": 522
+      }
     },
     {
       "width": 206,
@@ -72,14 +76,18 @@
       },
       "data": {
         "title": "API to Globe Viewer",
-        "url": "https://ecodata.odb.ntu.edu.tw/api/sadcp?lon0=120&lon1=135&lat0=20&lat1=35&dep0=100&dep_mode=mean&mode=monsoon&format=uvgrid&"
+        "url": "https://ecodata.odb.ntu.edu.tw/api/sadcp?lon0=120&lon1=135&lat0=20&lat1=35&dep1=100&dep_mode=mean&mode=monsoon&format=uvgrid&"
       },
       "selected": false,
       "positionAbsolute": {
         "x": 461.5,
         "y": 46
       },
-      "dragging": false
+      "dragging": false,
+      "measured": {
+        "width": 206,
+        "height": 88
+      }
     },
     {
       "id": "HidyViewer>node>2clY",
@@ -90,16 +98,20 @@
       },
       "data": {
         "title": "Hidy viewer",
-        "url": "https://ecodata.odb.ntu.edu.tw/api/sadcp?lon0=120&lon1=135&lat0=20&lat1=35&dep0=100&dep_mode=mean&mode=monsoon&format=uvgrid&"
+        "url": "https://ecodata.odb.ntu.edu.tw/api/sadcp?lon0=120&lon1=135&lat0=20&lat1=35&dep1=100&dep_mode=mean&mode=monsoon&format=uvgrid&"
       },
       "width": 206,
       "height": 88,
-      "selected": true,
+      "selected": false,
       "positionAbsolute": {
         "x": 465,
         "y": 170.23749999999978
       },
-      "dragging": false
+      "dragging": false,
+      "measured": {
+        "width": 206,
+        "height": 88
+      }
     }
   ],
   "edges": [
@@ -135,10 +147,10 @@
   },
   "apihandle": [
     {
-      "url": "https://ecodata.odb.ntu.edu.tw/api/sadcp?lon0=120&lon1=135&lat0=20&lat1=35&dep0=100&dep_mode=mean&mode=monsoon&format=uvgrid&"
+      "url": "https://ecodata.odb.ntu.edu.tw/api/sadcp?lon0=120&lon1=135&lat0=20&lat1=35&dep1=100&dep_mode=mean&mode=monsoon&format=uvgrid&"
     },
     {
-      "url": "https://ecodata.odb.ntu.edu.tw/api/sadcp?lon0=120&lon1=135&lat0=20&lat1=35&dep0=100&dep_mode=mean&mode=monsoon&format=uvgrid&"
+      "url": "https://ecodata.odb.ntu.edu.tw/api/sadcp?lon0=120&lon1=135&lat0=20&lat1=35&dep1=100&dep_mode=mean&mode=monsoon&format=uvgrid&"
     }
   ],
   "apinode": [
