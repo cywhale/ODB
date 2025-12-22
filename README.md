@@ -19,6 +19,9 @@
 
 ---
 
+## BioQuery (deprecated since 2025)
+
+
 My R works in Ocean Data Bank (ODB), Institute of Oceanography, NTU, Taiwan
 
 BioQuery: an integrated Open API front-end with Shiny App for bio-query (BioQuery) <a href="https://bio.odb.ntu.edu.tw/query" target="_blank">https://bio.odb.ntu.edu.tw/query</a>
