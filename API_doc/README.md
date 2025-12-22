@@ -1,8 +1,20 @@
-# Convert from Postman API collection to HTML of API doc
+# ODB marine Open APIs
+
+* [About ODB marine Open APIs: FAQ](https://api.odb.ntu.edu.tw/hub/about/faq/)
+
+----
+
+## Deprecation note: old APIs that integrated with BioQuery are depreacted since 2025
+
+* Please see ODB/APIverse, or visit our new API platform [Ocean APIverse](https://api.odb.ntu.edu.tw/hub)
+
+----
+
+## Convert from Postman API collection to HTML of API doc (deprecated)
 
 #### Links
 
-BioQueyr API user-interface integrated with shiny:
+BioQuery API user-interface integrated with shiny:
 
 1. https://bio.odb.ntu.edu.tw/query/
 
