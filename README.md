@@ -1,6 +1,21 @@
 # ODB
 
-* **Deprecated** since 2025. Please visit the new [BiOViEWER](https://bio.odb.ntu.edu.tw/viewer/) of ODB bio-database query app.
+## Hidy Viewer
+
+* Visit ODB [Hidy Viewer](https://odbview.oc.ntu.edu.tw/hidy/) to try our marine APIs and open data by interactive GUI.
+
+## Ocean APIverse
+
+* Visit ODB [Ocean APIverse](https://api.odb.ntu.edu.tw/hub/) to browse our marine Open APIs manuals and try them out.
+* [About ODB Ocean APIverse](https://api.odb.ntu.edu.tw/hub/about/faq/)
+* [APIverse sitemap](https://api.odb.ntu.edu.tw/hub/about/sitemap/)
+* [About ODB marine Open APIs: FAQ](https://api.odb.ntu.edu.tw/hub/about/faq/)
+
+## Bio-data
+
+* Visit [ODB Bio-database](https://www.odb.ntu.edu.tw/bio)
+* Visit the new [BiOViEWER](https://bio.odb.ntu.edu.tw/viewer/) of ODB bio-database query app.
+* **Deprecated** BioQuery since 2025.  
 
 ---
 
